@@ -1,30 +1,4 @@
-type ToDo = {
-    id: number,
-    completed: boolean,
-    note: string,
-}
-
-const renderToDo = (todo: ToDo) => {
-    const { completed, note, id } = todo;
-    return `
-        <li ${completed ? `class="completed"` : ``}>
-            <div class="view">
-                <input class="toggle" type="checkbox" ${completed ? `checked` : ``}>
-                <label>${note}</label>
-                <button class="destroy"></button>
-            </div>
-            <input class="edit" value="${id}">
-        </li>
-    `
-}
-
-const renderToDos = (toDos: ToDo[]) => {
-    return `
-        <ul class="todo-list">
-            ${toDos.map(renderToDo).reduce((prev, cur) => prev + cur)}
-        </ul>
-    `
-}
+import { ToDo, renderToDos } from "./toDoList.js"
 
 const renderApp = () => {
 	// Your starting point. Enjoy the ride!
@@ -32,11 +6,11 @@ const renderApp = () => {
     const toDos: ToDo[] = [{
         id: 1,
         completed: true,
-        note: "Taste JavaScript"
+        note: "Add TypeScript"
     }, {
         id: 2,
         completed: false,
-        note: "Buy a unicorn"
+        note: "Make Modules Work"
     }]
 
     if (main) {
