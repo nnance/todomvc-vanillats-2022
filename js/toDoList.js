@@ -1,6 +1,10 @@
 export const renderToDo = (todo) => {
     const { completed, note, id } = todo;
-    return `
+    const li = document.createElement('li');
+    if (completed) {
+        li.classList.add('completed');
+    }
+    li.innerHTML = `
         <li ${completed ? `class="completed"` : ``}>
             <div class="view">
                 <input class="toggle" type="checkbox" ${completed ? `checked` : ``}>
@@ -10,6 +14,7 @@ export const renderToDo = (todo) => {
             <input class="edit" value="${id}">
         </li>
     `;
+    return li.outerHTML;
 };
 export const renderToDos = (toDos) => {
     return `
