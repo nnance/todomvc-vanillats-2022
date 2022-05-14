@@ -1,8 +1,11 @@
 import { ToDo } from "./store.js";
 
-export const renderToDo = (todo: ToDo) => {
+export const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
     const { completed, note, id } = todo;
-    return `
+
+    const li = document.createElement('div');
+
+    li.innerHTML = `
         <li ${completed ? `class="completed"` : ``}>
             <div class="view">
                 <input class="toggle" type="checkbox" ${completed ? `checked` : ``} data-id="${id}">
@@ -12,6 +15,10 @@ export const renderToDo = (todo: ToDo) => {
             <input class="edit" value="${id}">
         </li>
     `;
+
+    li.querySelector('.toggle')?.addEventListener('click', () => toggle(todo));
+
+    return li;
 }
 
 export const toDoController = (model: ToDo, view: HTMLElement) => {
@@ -26,21 +33,22 @@ export const toDoController = (model: ToDo, view: HTMLElement) => {
     }
 }
 
-export const renderToDos = (toDos: ToDo[]) => {
+export const renderToDos = (toDos: ToDo[], toggle: (todo: ToDo) => void) => {
     const toDoElements = toDos.map(todo => {
-        const view = document.createElement('li');
-        view.innerHTML = renderToDo(todo);
-        toDoController(todo, view);
+        const view = renderToDo(todo, toggle);
+        // toDoController(todo, view);
         return view;
     });
 
-    const ul = document.createElement('ul');
+    const ul = document.createElement('div');
 
     ul.innerHTML = `
         <ul class="todo-list">
-            ${toDoElements.reduce((prev, cur) => prev + cur.innerHTML, '')}
         </ul>
     `;
+
+    const parent = ul.firstElementChild as HTMLElement;
+    toDoElements.forEach(li => parent.appendChild(li));
 
     return ul;
 };

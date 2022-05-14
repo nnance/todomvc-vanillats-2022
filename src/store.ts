@@ -4,10 +4,12 @@ export type ToDo = {
     note: string,
 }
 
-export type ToDoStore = [ToDo[], (newValue: ToDo[]) => void]
+export type ToDoStore = [() => ToDo[], (newValue: ToDo[]) => void]
 
 export const createStore = (render: (newValue: ToDo[]) => void): ToDoStore => {
     var store: ToDo[] = [];
+
+    const getter = () => store;
 
     const setter = (newValue: ToDo[]) => {
         store = newValue
@@ -15,12 +17,12 @@ export const createStore = (render: (newValue: ToDo[]) => void): ToDoStore => {
     };
 
     return [
-        store,
+        getter,
         setter
     ]
 }
 
 export const destroyItem = (store: ToDoStore) => (id: number) => {
-    const [toDos, setToDos] = store;
-    setToDos(toDos.filter(toDo => toDo.id === id))
+    const [getToDos, setToDos] = store;
+    setToDos(getToDos().filter(toDo => toDo.id === id))
 }

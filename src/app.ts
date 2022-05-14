@@ -1,47 +1,30 @@
-import { renderToDo, renderToDos } from "./toDoList.js"
+import { renderToDos } from "./toDoList.js"
 import { createStore, ToDo } from "./store.js"
 
-const connectEventHandlers = (li: Element, store: ToDo[]) => {
-    const checkbox = li.querySelector('.toggle') as HTMLInputElement
-    if (checkbox) {
-        checkbox.addEventListener('click', () => {
-            console.log(`${checkbox.dataset.id} clicked`)
-            const todo = store.find(todo => todo.id === Number(checkbox.dataset.id));
-            if (todo) {
-                console.log('todo found')
-                todo.completed = !todo.completed;
-                li.innerHTML = renderToDo(todo);
-                connectEventHandlers(li, store);
-                // refreshItems();
-                // todo.completed ? li.classList.add('completed') : li.classList.remove('completed');
-            }
-        });
-    }
+const toDoToggle = (todo: ToDo) => {
+    const newState = store().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
+    setState(newState)
+}
 
-    const refreshItems = () => {
-        const items = document.querySelectorAll('ul.todo-list li').forEach(el => {
-            const li = el as HTMLLIElement
-            const todo = store.find(todo => todo.id === Number(li.dataset.id));
-            if (todo) {
-                li.innerHTML = renderToDo(todo)
-            }
-        });
-    }
+const toggleAll = () => {
+    const newState = store().map(t => ({ ...t, completed: true }))
+    setState(newState)
 }
 
 const renderApp = (store: ToDo[]) => {
 	// Your starting point. Enjoy the ride!
     const main = window.document.querySelector('.main')
 
-    if (main) {
-        main.innerHTML = `
-            <input id="toggle-all" class="toggle-all" type="checkbox">
-            <label for="toggle-all">Mark all as complete</label>
-            ${renderToDos(store).innerHTML}
-        `
-        document.querySelectorAll('ul.todo-list li').forEach(li => {
-            connectEventHandlers(li, store)
-        })
+    const html = `
+        <input id="toggle-all" class="toggle-all" type="checkbox">
+        <label for="toggle-all">Mark all as complete</label>
+    `
+
+    if (main) {    
+        main.innerHTML = html;
+        main.appendChild(renderToDos(store, toDoToggle).firstElementChild as HTMLElement);
+
+        main.querySelector('.toggle-all')?.addEventListener('click', toggleAll);
     }
 }
 
@@ -84,7 +67,7 @@ const completed = (li: HTMLLIElement) => {
     return {
         subscribe: (observer: Observer<ToDo>) => {
             const handle = setInterval(() => {
-                const todo = store.find(todo => todo.id === Number(li.dataset.id));
+                const todo = store().find(todo => todo.id === Number(li.dataset.id));
                 if (todo) {
                     observer.next(todo)
                 }
@@ -132,7 +115,7 @@ const checkAllObserver = (): Observer<boolean> => {
     }
 }
 
-const checkAllUnsubscribe = checkAll('#toggle-all').subscribe(checkAllObserver())
+// const checkAllUnsubscribe = checkAll('#toggle-all').subscribe(checkAllObserver())
 
 // const store = <T>(state: ToDo[][]) => {
 //     return {
