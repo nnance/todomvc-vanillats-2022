@@ -10,8 +10,8 @@ export const createStore = (render: (newValue: ToDo[]) => void): ToDoStore => {
     var store: ToDo[] = [];
 
     const setter = (newValue: ToDo[]) => {
-        render(newValue)
         store = newValue
+        render(newValue)
     };
 
     return [

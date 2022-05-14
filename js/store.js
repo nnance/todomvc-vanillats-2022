@@ -1,8 +1,8 @@
 export const createStore = (render) => {
     var store = [];
     const setter = (newValue) => {
-        render(newValue);
         store = newValue;
+        render(newValue);
     };
     return [
         store,
