@@ -1,19 +1,21 @@
 import { Observer, ToDo, ToDoStore } from "./types";
 
-export const createStore = (): ToDoStore => {
-    var store: ToDo[] = [];
+export const createStore = (localStorageKey: string): ToDoStore => {
+    var store: ToDo[] = JSON.parse(window.localStorage.getItem(localStorageKey) || '[]');
     const subscribers: Observer<ToDo[]>[] = [];
 
     const getter = () => store;
 
     const setter = (newValue: ToDo[]) => {
         store = newValue
+        window.localStorage.setItem(localStorageKey, JSON.stringify(store));
         subscribers.forEach(subscriber => subscriber.next(store))
     };
 
     const subscribe = (observer: Observer<ToDo[]>) => {
         subscribers.push(observer);
-
+        observer.next(store);
+        
         return {
             unsubscribe: () => {
                 const index = subscribers.indexOf(observer);

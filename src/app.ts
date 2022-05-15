@@ -6,7 +6,7 @@ import { Actions, Observer, ToDo, ToDoStore } from "./types.js"
 //TODO - change toggle complete to toggle a single item
 //TODO - add tests
 
-const [getToDos, setToDos, subscribe] = createStore();
+const [getToDos, setToDos, subscribe] = createStore('todomvc-typescript-2002');
 
 const createActions = (store: ToDoStore): Actions => {
     const [getToDos, setToDos] = store;
@@ -40,16 +40,18 @@ const storeObserver: Observer<ToDo[]> = {
 subscribe(storeObserver);
 
 // initial state for the store
-setToDos([{
-    id: 1,
-    completed: true,
-    note: "Add TypeScript"
-}, {
-    id: 2,
-    completed: false,
-    note: "Make Modules Work"
-}, {
-    id: 3,
-    completed: false,
-    note: "Render on store change"
-}])
+if (getToDos().length === 0) {
+    setToDos([{
+        id: 1,
+        completed: true,
+        note: "Add TypeScript"
+    }, {
+        id: 2,
+        completed: false,
+        note: "Make Modules Work"
+    }, {
+        id: 3,
+        completed: false,
+        note: "Render on store change"
+    }]);
+}
