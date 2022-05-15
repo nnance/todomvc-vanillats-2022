@@ -1,25 +1,33 @@
 import { renderApp } from "./toDoList.js"
 import { createStore } from "./store.js"
-import { Actions, Observer, ToDo } from "./types.js"
+import { Actions, Observer, ToDo, ToDoStore } from "./types.js"
+
+//TODO - replace store observer with js proxy
+//TODO - change toggle complete to toggle a single item
+//TODO - add tests
 
 const [getToDos, setToDos, subscribe] = createStore();
 
-const actions: Actions = {
-    toggleAll: () => {
-        const newState = getToDos().map(t => ({ ...t, completed: true }))
-        setToDos(newState)
-    },
-    toggleCompleted: (todo: ToDo) => {
-        const newState = getToDos().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
-        setToDos(newState)
-    },
+const createActions = (store: ToDoStore): Actions => {
+    const [getToDos, setToDos] = store;
+
+    return {
+        toggleAll: () => {
+            const newState = getToDos().map(t => ({ ...t, completed: true }))
+            setToDos(newState)
+        },
+        toggleCompleted: (todo: ToDo) => {
+            const newState = getToDos().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
+            setToDos(newState)
+        },
+    }
 }
 
-const renderMain = renderApp(actions);
+const actions = createActions([getToDos, setToDos, subscribe]);
 
 const storeObserver: Observer<ToDo[]> = {
     next: (value: ToDo[]) => {
-        renderMain(value)
+        renderApp(actions)(value)
     },
     error: (error: Error) => {
         console.log(error)
@@ -29,7 +37,7 @@ const storeObserver: Observer<ToDo[]> = {
     }
 }
 
-const subscription = subscribe(storeObserver);
+subscribe(storeObserver);
 
 // initial state for the store
 setToDos([{
