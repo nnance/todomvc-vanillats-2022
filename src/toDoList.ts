@@ -1,6 +1,6 @@
-import { ToDo } from "./store.js";
+import { Actions, ToDo } from "./types.js";
 
-export const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
+const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
     const { completed, note, id } = todo;
 
     const li = document.createElement('div');
@@ -21,23 +21,10 @@ export const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
     return li;
 }
 
-export const toDoController = (model: ToDo, view: HTMLElement) => {
-    const el = view.querySelector('.toggle') as HTMLInputElement;
-    if (el) {
-        console.log("selector found")
-        el.addEventListener('click', () => {
-            console.log("toggle clicked")
-            model.completed = !model.completed;
-            model.completed ? view.classList.add('completed') : view.classList.remove('completed');
-        });
-    }
-}
+const renderToDos = (toDos: ToDo[], toDoToggle: (todo: ToDo) => void) => {
 
-export const renderToDos = (toDos: ToDo[], toggle: (todo: ToDo) => void) => {
     const toDoElements = toDos.map(todo => {
-        const view = renderToDo(todo, toggle);
-        // toDoController(todo, view);
-        return view;
+        return renderToDo(todo, toDoToggle);
     });
 
     const ul = document.createElement('div');
@@ -52,3 +39,20 @@ export const renderToDos = (toDos: ToDo[], toggle: (todo: ToDo) => void) => {
 
     return ul;
 };
+
+export const renderApp = (actions: Actions) => (toDos: ToDo[]) => {
+	// Your starting point. Enjoy the ride!
+    const main = document.querySelector('.main')
+
+    const html = `
+        <input id="toggle-all" class="toggle-all" type="checkbox">
+        <label for="toggle-all">Mark all as complete</label>
+    `
+
+    if (main) {    
+        main.innerHTML = html;
+        main.appendChild(renderToDos(toDos, actions.toggleCompleted).firstElementChild as HTMLElement);
+
+        main.querySelector('.toggle-all')?.addEventListener('click', actions.toggleAll);
+    }
+}

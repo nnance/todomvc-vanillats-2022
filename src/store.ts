@@ -1,24 +1,33 @@
-export type ToDo = {
-    id: number,
-    completed: boolean,
-    note: string,
-}
+import { Observer, ToDo, ToDoStore } from "./types";
 
-export type ToDoStore = [() => ToDo[], (newValue: ToDo[]) => void]
-
-export const createStore = (render: (newValue: ToDo[]) => void): ToDoStore => {
+export const createStore = (): ToDoStore => {
     var store: ToDo[] = [];
+    const subscribers: Observer<ToDo[]>[] = [];
 
     const getter = () => store;
 
     const setter = (newValue: ToDo[]) => {
         store = newValue
-        render(newValue)
+        subscribers.forEach(subscriber => subscriber.next(store))
     };
+
+    const subscribe = (observer: Observer<ToDo[]>) => {
+        subscribers.push(observer);
+
+        return {
+            unsubscribe: () => {
+                const index = subscribers.indexOf(observer);
+                if (index > -1) {
+                    subscribers.splice(index, 1);
+                }
+            }
+        }
+    }
 
     return [
         getter,
-        setter
+        setter,
+        subscribe
     ]
 }
 
