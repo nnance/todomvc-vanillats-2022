@@ -6,24 +6,24 @@ import { Actions, Observer, ToDo, ToDoStore } from "./types.js"
 //TODO - change toggle complete to toggle a single item
 //TODO - add tests
 
-const [getToDos, setToDos, subscribe] = createStore('todomvc-typescript-2002');
+const { getAll, save, subscribe } = createStore('todomvc-typescript-2002');
 
 const createActions = (store: ToDoStore): Actions => {
-    const [getToDos, setToDos] = store;
+    const { getAll, save } = store;
 
     return {
         toggleAll: () => {
-            const newState = getToDos().map(t => ({ ...t, completed: true }))
-            setToDos(newState)
+            const newState = getAll().map(t => ({ ...t, completed: true }))
+            save(newState)
         },
         toggleCompleted: (todo: ToDo) => {
-            const newState = getToDos().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
-            setToDos(newState)
+            const newState = getAll().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
+            save(newState)
         },
     }
 }
 
-const actions = createActions([getToDos, setToDos, subscribe]);
+const actions = createActions({getAll, save, subscribe});
 
 const storeObserver: Observer<ToDo[]> = {
     next: (value: ToDo[]) => {
@@ -40,8 +40,8 @@ const storeObserver: Observer<ToDo[]> = {
 subscribe(storeObserver);
 
 // initial state for the store
-if (getToDos().length === 0) {
-    setToDos([{
+if (getAll().length === 0) {
+    save([{
         id: 1,
         completed: true,
         note: "Add TypeScript"

@@ -4,9 +4,9 @@ export const createStore = (localStorageKey: string): ToDoStore => {
     var store: ToDo[] = JSON.parse(window.localStorage.getItem(localStorageKey) || '[]');
     const subscribers: Observer<ToDo[]>[] = [];
 
-    const getter = () => store;
+    const getAll = () => store;
 
-    const setter = (newValue: ToDo[]) => {
+    const save = (newValue: ToDo[]) => {
         store = newValue
         window.localStorage.setItem(localStorageKey, JSON.stringify(store));
         subscribers.forEach(subscriber => subscriber.next(store))
@@ -26,14 +26,18 @@ export const createStore = (localStorageKey: string): ToDoStore => {
         }
     }
 
-    return [
-        getter,
-        setter,
+    return {
+        getAll,
+        save,
         subscribe
-    ]
+    }
 }
 
-export const destroyItem = (store: ToDoStore) => (id: number) => {
-    const [getToDos, setToDos] = store;
-    setToDos(getToDos().filter(toDo => toDo.id === id))
+export const addItem = (store: ToDoStore) => (toDo: ToDo) => {
+    const newState = [...store.getAll(), toDo];
+    store.save(newState);
+}
+
+export const destroyItem = ({getAll, save}: ToDoStore) => (id: number) => {
+    save(getAll().filter(toDo => toDo.id === id))
 }

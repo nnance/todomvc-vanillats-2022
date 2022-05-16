@@ -10,11 +10,11 @@ export type ToDo = {
     note: string,
 }
 
-export type ToDoStore = [
-    () => ToDo[],
-    (newValue: ToDo[]) => void, 
-    (observer: Observer<ToDo[]>) => { unsubscribe: () => void }
-];
+export type ToDoStore = {
+    getAll: () => ToDo[],
+    save: (newValue: ToDo[]) => void, 
+    subscribe: (observer: Observer<ToDo[]>) => { unsubscribe: () => void }
+};
 
 export type Actions = {
     toggleAll: () => void,
