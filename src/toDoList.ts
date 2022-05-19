@@ -1,5 +1,5 @@
 import { createElement, addListener } from "./lib.js";
-import { Actions, ToDo } from "./types.js";
+import { ToDo } from "./types";
 
 const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
     const { completed, note, id } = todo;
@@ -20,7 +20,7 @@ const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
     return li;
 }
 
-const renderToDos = (toDos: ToDo[], toDoToggle: (todo: ToDo) => void) => {
+export const renderToDos = (toDos: ToDo[], toDoToggle: (todo: ToDo) => void) => {
 
     const toDoElements = toDos.map(todo => {
         return renderToDo(todo, toDoToggle);
@@ -35,20 +35,3 @@ const renderToDos = (toDos: ToDo[], toDoToggle: (todo: ToDo) => void) => {
 
     return ul;
 };
-
-export const renderApp = (actions: Actions) => (toDos: ToDo[]) => {
-	// Your starting point. Enjoy the ride!
-    const main = document.querySelector('.main') as HTMLElement;
-
-    const html = `
-        <input id="toggle-all" class="toggle-all" type="checkbox">
-        <label for="toggle-all">Mark all as complete</label>
-    `
-
-    if (main) {    
-        main.innerHTML = html;
-        main.appendChild(renderToDos(toDos, actions.toggleCompleted));
-
-        addListener(main, `.toggle-all`, `click`, () => actions.toggleAll());
-    }
-}
