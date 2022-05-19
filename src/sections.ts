@@ -10,6 +10,8 @@ export const header = (actions: Actions) => (toDos: ToDo[]) => {
         </header>
     `);
 
+    addListener(header, `.new-todo`, `keyup`, actions.addItem);
+
     return header;
 }
 
@@ -23,7 +25,7 @@ export const main = (actions: Actions) => (toDos: ToDo[]) => {
 
     main.appendChild(renderToDos(toDos, actions.toggleCompleted));
 
-    addListener(main, `.toggle-all`, `click`, () => actions.toggleAll());
+    addListener(main, `.toggle-all`, `click`, actions.toggleAll);
 
     return main;
 }

@@ -16,6 +16,6 @@ export type ToDoStore = {
 
 export type Actions = {
     toggleAll: () => void,
-    toggleCompleted: (todo: ToDo) => void,
-    addItem: (note: string) => void,
+    toggleCompleted: (todo: ToDo) => () => void,
+    addItem: (event?: Event) => void,
 }

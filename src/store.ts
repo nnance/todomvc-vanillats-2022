@@ -29,7 +29,7 @@ export const toggleAll = (store: ToDoStore) => () => {
     store.save(newState)
 }
 
-export const toggleCompleted = (store: ToDoStore) => (todo: ToDo) => {
+export const toggleCompleted = (store: ToDoStore) => (todo: ToDo) => () => {
     const newState = store.getAll().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
     store.save(newState)
 }

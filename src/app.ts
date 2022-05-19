@@ -13,7 +13,15 @@ const createActions = (store: ToDoStore): Actions => {
     return {
         toggleAll: toggleAll(store),
         toggleCompleted: toggleCompleted(store),
-        addItem: addItem(store),
+        addItem: (event?: Event) => {
+            const e = event as KeyboardEvent;
+            if (e && e.key === "Enter" && e.target instanceof HTMLInputElement) {
+                const input = e.target as HTMLInputElement;
+                if (input.value.length > 0) {
+                    addItem(store)(input.value)
+                }
+            }
+        }
     }
 }
 

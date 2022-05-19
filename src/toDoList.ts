@@ -1,7 +1,7 @@
 import { createElement, addListener } from "./lib.js";
 import { ToDo } from "./types";
 
-const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
+const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => () => void) => {
     const { completed, note, id } = todo;
 
     const li = createElement(`
@@ -15,12 +15,12 @@ const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => void) => {
         </li>
     `);
 
-    addListener(li, `.toggle`, `click`, () => toggle(todo));
+    addListener(li, `.toggle`, `click`, toggle(todo));
 
     return li;
 }
 
-export const renderToDos = (toDos: ToDo[], toDoToggle: (todo: ToDo) => void) => {
+export const renderToDos = (toDos: ToDo[], toDoToggle: (todo: ToDo) => () => void) => {
 
     const toDoElements = toDos.map(todo => {
         return renderToDo(todo, toDoToggle);
