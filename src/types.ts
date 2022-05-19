@@ -1,7 +1,5 @@
 export type Observer<T> = {
     next: (value: T) => void
-    error: (error: Error) => void
-    complete: () => void
 }
 
 export type ToDo = {
@@ -19,4 +17,5 @@ export type ToDoStore = {
 export type Actions = {
     toggleAll: () => void,
     toggleCompleted: (todo: ToDo) => void,
+    addItem: (note: string) => void,
 }

@@ -1,57 +1,48 @@
 import { renderApp } from "./toDoList.js"
-import { createStore } from "./store.js"
+import { createStorage, toggleAll, toggleCompleted, addItem } from "./store.js"
 import { Actions, Observer, ToDo, ToDoStore } from "./types.js"
 
 //TODO - replace store observer with js proxy
 //TODO - change toggle complete to toggle a single item
 //TODO - add tests
 
-const { getAll, save, subscribe } = createStore('todomvc-typescript-2002');
+const store = createStorage('todomvc-typescript-2002');
 
 const createActions = (store: ToDoStore): Actions => {
-    const { getAll, save } = store;
-
+    
     return {
-        toggleAll: () => {
-            const newState = getAll().map(t => ({ ...t, completed: true }))
-            save(newState)
-        },
-        toggleCompleted: (todo: ToDo) => {
-            const newState = getAll().map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t)
-            save(newState)
-        },
+        toggleAll: toggleAll(store),
+        toggleCompleted: toggleCompleted(store),
+        addItem: addItem(store),
     }
 }
 
-const actions = createActions({getAll, save, subscribe});
+const actions = createActions(store);
+const renderer = renderApp(actions);
 
 const storeObserver: Observer<ToDo[]> = {
     next: (value: ToDo[]) => {
-        renderApp(actions)(value)
-    },
-    error: (error: Error) => {
-        console.log(error)
-    },
-    complete: () => {
-        console.log("complete")
+        renderer(value)
     }
 }
 
-subscribe(storeObserver);
+store.subscribe(storeObserver);
 
 // initial state for the store
-if (getAll().length === 0) {
-    save([{
-        id: 1,
+if (store.getAll().length === 0) {
+    store.save([{
+        id: Date.now(),
         completed: true,
         note: "Add TypeScript"
     }, {
-        id: 2,
+        id: Date.now(),
         completed: false,
         note: "Make Modules Work"
     }, {
-        id: 3,
+        id: Date.now(),
         completed: false,
         note: "Render on store change"
     }]);
+} else {
+    renderer(store.getAll());
 }
