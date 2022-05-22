@@ -1,5 +1,5 @@
 import { footer, header, main } from "./sections.js";
-import { createStorage, toggleAll, toggleCompleted, addItem } from "./store.js"
+import { createStorage, toggleAll, toggleCompleted, addItem, setFilter } from "./store.js"
 import { Actions, Observer, AppStore, FilterType, AppState } from "./types.js"
 
 //TODO - replace store observer with js proxy
@@ -21,7 +21,8 @@ const createActions = (store: AppStore): Actions => {
                     addItem(store)(input.value)
                 }
             }
-        }
+        },
+        selectFilter: (filter: FilterType) => () => setFilter(store)(filter),
     }
 }
 
@@ -34,7 +35,7 @@ const renderApp = (actions: Actions) => ({ filter, toDos }: AppState) => {
             app.removeChild(app.lastChild!);
         }
         app.appendChild(header(actions)(toDos));
-        app.appendChild(main(actions)(toDos));
+        app.appendChild(main(actions)(filter, toDos));
         app.appendChild(footer(actions)(filter, toDos));
     }
 }

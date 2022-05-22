@@ -1,4 +1,4 @@
-import { Observer, ToDo, AppStore, AppState } from "./types";
+import { Observer, ToDo, AppStore, AppState, FilterType } from "./types";
 
 export const createStorage = (localStorageKey: string): AppStore => {
     const subscribers: Observer<AppState>[] = [];
@@ -50,4 +50,9 @@ export const destroyItem = (store: AppStore) => (id: number) => {
 
 export const filterCompleted = ({getState}: AppStore) => (completed: boolean) => {
     return getState().toDos.filter(toDo => toDo.completed === completed)
+}
+
+export const setFilter = (store: AppStore) => (filter: FilterType) => {
+    const state = store.getState()
+    store.save({ ...state, filter });
 }

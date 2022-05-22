@@ -15,7 +15,7 @@ export const header = (actions: Actions) => (toDos: ToDo[]) => {
     return header;
 }
 
-export const main = (actions: Actions) => (toDos: ToDo[]) => {
+export const main = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) => {
     const main = createElement(`
         <section class="main">
             <input id="toggle-all" class="toggle-all" type="checkbox">
@@ -23,7 +23,7 @@ export const main = (actions: Actions) => (toDos: ToDo[]) => {
         </section>
     `);
 
-    main.appendChild(renderToDos(toDos, actions.toggleCompleted));
+    main.appendChild(renderToDos(filter, toDos, actions.toggleCompleted));
 
     addListener(main, `.toggle-all`, `click`, actions.toggleAll);
 
@@ -49,19 +49,23 @@ export const footer = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) 
         <span class="todo-count"><strong>${toDos.filter(toDoFilter).length}</strong> item left</span>
         <ul class="filters">
             <li>
-                <a class="selected" href="#/">All</a>
+            <a class="${filter === FilterType.All ? 'selected' : ''}" id="filter-all">All</a>
             </li>
             <li>
-                <a href="#/active">Active</a>
+                <a class="${filter === FilterType.Active ? 'selected' : ''}" id="filter-active">Active</a>
             </li>
             <li>
-                <a href="#/completed">Completed</a>
+            <a class="${filter === FilterType.Completed ? 'selected' : ''}" id="filter-completed">Completed</a>
             </li>
         </ul>
         <button class="clear-completed">Clear completed</button>
     </footer>
 
     `);
+
+    addListener(footer, `#filter-all`, `click`, actions.selectFilter(FilterType.All));
+    addListener(footer, `#filter-active`, `click`, actions.selectFilter(FilterType.Active));
+    addListener(footer, `#filter-completed`, `click`, actions.selectFilter(FilterType.Completed));
 
     return footer;
 }

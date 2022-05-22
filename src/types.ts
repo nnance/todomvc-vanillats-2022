@@ -29,4 +29,5 @@ export type Actions = {
     toggleAll: () => void,
     toggleCompleted: (todo: ToDo) => () => void,
     addItem: (event?: Event) => void,
+    selectFilter: (filter: FilterType) => () => void,
 }
