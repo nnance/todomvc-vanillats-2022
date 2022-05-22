@@ -1,29 +1,26 @@
 import { footer, header, main } from "./views.js";
 import { createStorage } from "./store.js"
-import { AppState, Action, ActionTypes, Dispatcher, FilterType } from "./types.js"
+import { AppState, Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js"
+import { reducer } from "./reducer.js";
 
 //TODO - add tests
 
-const reducer = (state: AppState, action: Action<ActionTypes>): AppState => {
-    switch (action.type) {
-        case ActionTypes.ToggleAll:
-            return { ...state, toDos: state.toDos.map(t => ({ ...t, completed: true })) }
-        case ActionTypes.ToggleCompleted:
-            return { ...state, toDos: state.toDos.map(t => t.id === action.payload ? { ...t, completed: !t.completed } : t) }
-        case ActionTypes.AddItem:
-            return { ...state, toDos: [...state.toDos, { id: Date.now(), completed: false, note: action.payload }] }
-        case ActionTypes.DestroyItem:
-            return { ...state, toDos: (state.toDos.filter(t => t.id !== action.payload)) }
-        case ActionTypes.SetFilter:
-            return { ...state, filter: action.payload }
+const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
+    switch (filter) {
+        case FilterType.All:
+            return true;
+        case FilterType.Active:
+            return !todo.completed;
+        case FilterType.Completed:
+            return todo.completed;
         default:
-            return state;
+            return false;
     }
 }
 
-const store = createStorage(reducer, 'todomvc-typescript-2002', { toDos: [], filter: FilterType.All });
-
 const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, { filter, toDos }: AppState) => {
+    const filterToDos = toDos.filter(toDoFilter(filter))
+
 	// Your starting point. Enjoy the ride!
     const app = document.querySelector('.todoapp') as HTMLElement;
 
@@ -32,10 +29,12 @@ const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, { filter, toDos }:
             app.removeChild(app.lastChild!);
         }
         app.appendChild(header(dispatch)());
-        app.appendChild(main(dispatch)(filter, toDos));
-        app.appendChild(footer(dispatch)(filter, toDos));
+        app.appendChild(main(dispatch)(filterToDos));
+        app.appendChild(footer(dispatch)(filter, filterToDos));
     }
 }
+
+const store = createStorage(reducer, 'todomvc-typescript-2002', { toDos: [], filter: FilterType.All });
 
 store.subscribe({
     next: (value: AppState) => renderApp(store.dispatch, value)
