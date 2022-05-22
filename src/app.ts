@@ -1,4 +1,4 @@
-import { footer, header, main } from "./sections.js";
+import { footer, header, main } from "./views.js";
 import { createStorage, toggleAll, toggleCompleted, addItem, setFilter } from "./store.js"
 import { Actions, Observer, AppStore, FilterType, AppState } from "./types.js"
 
