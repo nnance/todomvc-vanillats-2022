@@ -1,4 +1,4 @@
-import { createElement, addListener } from "./lib.js";
+import { createElement, addListener, toDoFilter } from "./lib.js";
 import { FilterType, ToDo } from "./types.js";
 
 const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => () => void) => {
@@ -21,21 +21,7 @@ const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => () => void) => {
 }
 
 export const renderToDos = (filter: FilterType, toDos: ToDo[], toDoToggle: (todo: ToDo) => () => void) => {
-
-    const toDoFilter = (todo: ToDo) => {
-        switch (filter) {
-            case FilterType.All:
-                return true;
-            case FilterType.Active:
-                return !todo.completed;
-            case FilterType.Completed:
-                return todo.completed;
-            default:
-                return false;
-        }
-    }
-
-    const toDoElements = toDos.filter(toDoFilter).map(todo => {
+    const toDoElements = toDos.filter(toDoFilter(filter)).map(todo => {
         return renderToDo(todo, toDoToggle);
     });
 

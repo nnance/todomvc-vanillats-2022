@@ -1,3 +1,5 @@
+import { FilterType, ToDo } from "./types.js";
+
 export const createElement = (html: string): HTMLElement => {
     const template = document.createElement('template');
     template.innerHTML = html;
@@ -10,4 +12,17 @@ export const addListener = (el: HTMLElement, selector: string, event: string, ha
     el.querySelector(selector)?.addEventListener(event, e => {
         handler(e, el);
     });
+}
+
+export const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
+    switch (filter) {
+        case FilterType.All:
+            return true;
+        case FilterType.Active:
+            return !todo.completed;
+        case FilterType.Completed:
+            return todo.completed;
+        default:
+            return false;
+    }
 }

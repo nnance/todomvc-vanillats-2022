@@ -1,4 +1,4 @@
-import { addListener, createElement } from "./lib.js";
+import { addListener, createElement, toDoFilter } from "./lib.js";
 import { renderToDos } from "./toDoList.js";
 import { Actions, FilterType, ToDo } from "./types.js";
 
@@ -31,22 +31,9 @@ export const main = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) =>
 }
 
 export const footer = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) => {
-    const toDoFilter = (todo: ToDo) => {
-        switch (filter) {
-            case FilterType.All:
-                return true;
-            case FilterType.Active:
-                return !todo.completed;
-            case FilterType.Completed:
-                return todo.completed;
-            default:
-                return false;
-        }
-    }
-
     const footer = createElement(`
     <footer class="footer">
-        <span class="todo-count"><strong>${toDos.filter(toDoFilter).length}</strong> item left</span>
+        <span class="todo-count"><strong>${toDos.filter(toDoFilter(filter)).length}</strong> item left</span>
         <ul class="filters">
             <li>
             <a class="${filter === FilterType.All ? 'selected' : ''}" id="filter-all">All</a>
