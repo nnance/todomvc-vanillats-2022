@@ -19,15 +19,25 @@ export type AppState = {
     filter: FilterType,
 }
 
+export enum ActionTypes {
+    ToggleAll,
+    ToggleCompleted,
+    AddItem,
+    DestroyItem,
+    SetFilter,
+}
+
+export type Action = {
+    type: ActionTypes,
+    payload?: any,
+}
+
+export type Reducer = (state: AppState, action: Action) => AppState;
+export type Dispatcher = (action: Action) => void;
+
 export type AppStore = {
     getState: () => AppState,
-    save: (newValue: AppState) => void, 
     subscribe: (observer: Observer<AppState>) => { unsubscribe: () => void }
+    dispatch: Dispatcher,
 };
 
-export type Actions = {
-    toggleAll: () => void,
-    toggleCompleted: (todo: ToDo) => () => void,
-    addItem: (event?: Event) => void,
-    selectFilter: (filter: FilterType) => () => void,
-}

@@ -1,7 +1,7 @@
 import { addListener, createElement, toDoFilter } from "./lib.js";
-import { Actions, FilterType, ToDo } from "./types.js";
+import { ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js";
 
-const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => () => void) => {
+const renderToDo = (todo: ToDo, dispatch: Dispatcher) => {
     const { completed, note, id } = todo;
 
     const li = createElement(`
@@ -15,14 +15,14 @@ const renderToDo = (todo: ToDo, toggle: (todo: ToDo) => () => void) => {
         </li>
     `);
 
-    addListener(li, `.toggle`, `click`, toggle(todo));
+    addListener(li, `.toggle`, `click`, () => dispatch({ type: ActionTypes.ToggleCompleted, payload: id }));
 
     return li;
 }
 
-const renderToDos = (filter: FilterType, toDos: ToDo[], toDoToggle: (todo: ToDo) => () => void) => {
+const renderToDos = (filter: FilterType, toDos: ToDo[], dispatch: Dispatcher) => {
     const toDoElements = toDos.filter(toDoFilter(filter)).map(todo => {
-        return renderToDo(todo, toDoToggle);
+        return renderToDo(todo, dispatch);
     });
 
     const ul = createElement(`
@@ -35,7 +35,7 @@ const renderToDos = (filter: FilterType, toDos: ToDo[], toDoToggle: (todo: ToDo)
     return ul;
 };
 
-export const header = (actions: Actions) => (toDos: ToDo[]) => {
+export const header = (dispatch: Dispatcher) => (toDos: ToDo[]) => {
     const header = createElement(`
         <header class="header">
             <h1>todos</h1>
@@ -43,12 +43,20 @@ export const header = (actions: Actions) => (toDos: ToDo[]) => {
         </header>
     `);
 
-    addListener(header, `.new-todo`, `keyup`, actions.addItem);
+    addListener(header, `.new-todo`, `keyup`, (event?: Event) => {
+        const e = event as KeyboardEvent;
+        if (e && e.key === "Enter" && e.target instanceof HTMLInputElement) {
+            const input = e.target as HTMLInputElement;
+            if (input.value.length > 0) {
+                dispatch({ type: ActionTypes.AddItem, payload: input.value });
+            }
+        }
+    });
 
     return header;
 }
 
-export const main = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) => {
+export const main = (dispatch: Dispatcher) => (filter: FilterType, toDos: ToDo[]) => {
     const main = createElement(`
         <section class="main">
             <input id="toggle-all" class="toggle-all" type="checkbox">
@@ -56,14 +64,14 @@ export const main = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) =>
         </section>
     `);
 
-    main.appendChild(renderToDos(filter, toDos, actions.toggleCompleted));
+    main.appendChild(renderToDos(filter, toDos, dispatch));
 
-    addListener(main, `.toggle-all`, `click`, actions.toggleAll);
+    addListener(main, `.toggle-all`, `click`, () => { dispatch({ type: ActionTypes.ToggleAll }); });
 
     return main;
 }
 
-export const footer = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) => {
+export const footer = (dispatch: Dispatcher) => (filter: FilterType, toDos: ToDo[]) => {
     const footer = createElement(`
     <footer class="footer">
         <span class="todo-count"><strong>${toDos.filter(toDoFilter(filter)).length}</strong> item left</span>
@@ -83,9 +91,9 @@ export const footer = (actions: Actions) => (filter: FilterType, toDos: ToDo[]) 
 
     `);
 
-    addListener(footer, `#filter-all`, `click`, actions.selectFilter(FilterType.All));
-    addListener(footer, `#filter-active`, `click`, actions.selectFilter(FilterType.Active));
-    addListener(footer, `#filter-completed`, `click`, actions.selectFilter(FilterType.Completed));
+    addListener(footer, `#filter-all`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.All }));
+    addListener(footer, `#filter-active`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Active }));
+    addListener(footer, `#filter-completed`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Completed }));
 
     return footer;
 }

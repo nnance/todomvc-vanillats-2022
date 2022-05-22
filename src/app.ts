@@ -1,32 +1,29 @@
 import { footer, header, main } from "./views.js";
-import { createStorage, toggleAll, toggleCompleted, addItem, setFilter } from "./store.js"
-import { Actions, Observer, AppStore, FilterType, AppState } from "./types.js"
+import { createStorage } from "./store.js"
+import { Observer, AppState, Action, ActionTypes, Dispatcher } from "./types.js"
 
-//TODO - replace store observer with js proxy
-//TODO - change toggle complete to toggle a single item
 //TODO - add tests
 
-const store = createStorage('todomvc-typescript-2002');
-
-const createActions = (store: AppStore): Actions => {
-    
-    return {
-        toggleAll: toggleAll(store),
-        toggleCompleted: toggleCompleted(store),
-        addItem: (event?: Event) => {
-            const e = event as KeyboardEvent;
-            if (e && e.key === "Enter" && e.target instanceof HTMLInputElement) {
-                const input = e.target as HTMLInputElement;
-                if (input.value.length > 0) {
-                    addItem(store)(input.value)
-                }
-            }
-        },
-        selectFilter: (filter: FilterType) => () => setFilter(store)(filter),
+const reducer = (state: AppState, action: Action): AppState => {
+    switch (action.type) {
+        case ActionTypes.ToggleAll:
+            return { ...state, toDos: state.toDos.map(t => ({ ...t, completed: true })) }
+        case ActionTypes.ToggleCompleted:
+            return { ...state, toDos: state.toDos.map(t => t.id === action.payload ? { ...t, completed: !t.completed } : t) }
+        case ActionTypes.AddItem:
+            return { ...state, toDos: [...state.toDos, { id: Date.now(), completed: false, note: action.payload }] }
+        case ActionTypes.DestroyItem:
+            return { ...state, toDos: (state.toDos.filter(t => t.id !== action.payload)) }
+        case ActionTypes.SetFilter:
+            return { ...state, filter: action.payload }
+        default:
+            return state;
     }
 }
 
-const renderApp = (actions: Actions) => ({ filter, toDos }: AppState) => {
+const store = createStorage(reducer, 'todomvc-typescript-2002');
+
+const renderApp = (dispatch: Dispatcher, { filter, toDos }: AppState) => {
 	// Your starting point. Enjoy the ride!
     const app = document.querySelector('.todoapp') as HTMLElement;
 
@@ -34,22 +31,12 @@ const renderApp = (actions: Actions) => ({ filter, toDos }: AppState) => {
         while (app.hasChildNodes()) {
             app.removeChild(app.lastChild!);
         }
-        app.appendChild(header(actions)(toDos));
-        app.appendChild(main(actions)(filter, toDos));
-        app.appendChild(footer(actions)(filter, toDos));
+        app.appendChild(header(dispatch)(toDos));
+        app.appendChild(main(dispatch)(filter, toDos));
+        app.appendChild(footer(dispatch)(filter, toDos));
     }
 }
 
-
-const actions = createActions(store);
-const renderer = renderApp(actions);
-
-const storeObserver: Observer<AppState> = {
-    next: (value: AppState) => renderer(value)
-}
-
-store.subscribe(storeObserver);
-
-// initial state for the store
-const toDos = store.getState().toDos;
-renderer(store.getState());
+store.subscribe({
+    next: (value: AppState) => renderApp(store.dispatch, value)
+});

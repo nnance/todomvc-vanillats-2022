@@ -1,58 +1,41 @@
-import { Observer, ToDo, AppStore, AppState, FilterType } from "./types";
+import { Observer, AppStore, AppState, FilterType, Reducer, Action } from "./types.js";
 
-export const createStorage = (localStorageKey: string): AppStore => {
+export const createStorage = (reducer: Reducer, localStorageKey: string): AppStore => {
     const subscribers: Observer<AppState>[] = [];
+    
+    const getState = (): AppState => {
+        const state = localStorage.getItem(localStorageKey);
+        return state ? JSON.parse(state) : { toDos: [], filter: FilterType.All };
+    }
 
-    return {
-        getState: () => JSON.parse(window.localStorage.getItem(localStorageKey) || '[]'),
-        save: (newValue: AppState) => {
-            window.localStorage.setItem(localStorageKey, JSON.stringify(newValue));
-            subscribers.forEach(subscriber => subscriber.next(newValue));
-        },
-        subscribe: (observer: Observer<AppState>) => {
-            subscribers.push(observer);
-            
-            return {
-                unsubscribe: () => {
-                    const index = subscribers.indexOf(observer);
-                    if (index > -1) {
-                        subscribers.splice(index, 1);
-                    }
+    const save = (newValue: AppState) => {
+        localStorage.setItem(localStorageKey, JSON.stringify(newValue));
+        return newValue
+    }
+
+    const notify = (newValue: AppState) => {
+        subscribers.forEach(subscriber => subscriber.next(newValue));
+    }
+
+    const subscribe = (observer: Observer<AppState>) => {
+        subscribers.push(observer);
+        notify(getState());
+
+        return {
+            unsubscribe: () => {
+                const index = subscribers.indexOf(observer);
+                if (index > -1) {
+                    subscribers.splice(index, 1);
                 }
             }
         }
     }
-}
 
-export const toggleAll = (store: AppStore) => () => {
-    const state = store.getState()
-    const newState = { ...state, toDos: state.toDos.map(t => ({ ...t, completed: true })) }
-    store.save(newState)
-}
+    const dispatch = (action: Action) => {
+        const newState = reducer(getState(), action);
+        save(newState);
+        notify(newState);
+    }
 
-export const toggleCompleted = (store: AppStore) => (todo: ToDo) => () => {
-    const state = store.getState()
-    const newState = { ...state, toDos: state.toDos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t) }
-    store.save(newState)
-}
-
-export const addItem = (store: AppStore) => (note: string) => {
-    const state = store.getState()
-    const newState = { ...state, toDos: [...state.toDos, { id: Date.now(), completed: false, note }]};
-    store.save(newState);
-}
-
-export const destroyItem = (store: AppStore) => (id: number) => {
-    const state = store.getState()
-    const newState = { ...state, toDos: (state.toDos.filter(toDo => toDo.id === id)) }
-    store.save(newState);
-}
-
-export const filterCompleted = ({getState}: AppStore) => (completed: boolean) => {
-    return getState().toDos.filter(toDo => toDo.completed === completed)
-}
-
-export const setFilter = (store: AppStore) => (filter: FilterType) => {
-    const state = store.getState()
-    store.save({ ...state, filter });
+    return { getState, subscribe, dispatch }
 }
