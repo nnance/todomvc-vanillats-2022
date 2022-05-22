@@ -8,10 +8,21 @@ export type ToDo = {
     note: string,
 }
 
-export type ToDoStore = {
-    getAll: () => ToDo[],
-    save: (newValue: ToDo[]) => void, 
-    subscribe: (observer: Observer<ToDo[]>) => { unsubscribe: () => void }
+export enum FilterType {
+    All,
+    Completed,
+    Active
+}
+
+export type AppState = {
+    toDos: ToDo[],
+    filter: FilterType,
+}
+
+export type AppStore = {
+    getState: () => AppState,
+    save: (newValue: AppState) => void, 
+    subscribe: (observer: Observer<AppState>) => { unsubscribe: () => void }
 };
 
 export type Actions = {

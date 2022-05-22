@@ -1,6 +1,6 @@
 import { footer, header, main } from "./sections.js";
 import { createStorage, toggleAll, toggleCompleted, addItem } from "./store.js"
-import { Actions, Observer, ToDo, ToDoStore } from "./types"
+import { Actions, Observer, AppStore, FilterType, AppState } from "./types.js"
 
 //TODO - replace store observer with js proxy
 //TODO - change toggle complete to toggle a single item
@@ -8,7 +8,7 @@ import { Actions, Observer, ToDo, ToDoStore } from "./types"
 
 const store = createStorage('todomvc-typescript-2002');
 
-const createActions = (store: ToDoStore): Actions => {
+const createActions = (store: AppStore): Actions => {
     
     return {
         toggleAll: toggleAll(store),
@@ -25,7 +25,7 @@ const createActions = (store: ToDoStore): Actions => {
     }
 }
 
-const renderApp = (actions: Actions) => (toDos: ToDo[]) => {
+const renderApp = (actions: Actions) => ({ filter, toDos }: AppState) => {
 	// Your starting point. Enjoy the ride!
     const app = document.querySelector('.todoapp') as HTMLElement;
 
@@ -35,7 +35,7 @@ const renderApp = (actions: Actions) => (toDos: ToDo[]) => {
         }
         app.appendChild(header(actions)(toDos));
         app.appendChild(main(actions)(toDos));
-        app.appendChild(footer(actions)(toDos));
+        app.appendChild(footer(actions)(filter, toDos));
     }
 }
 
@@ -43,29 +43,31 @@ const renderApp = (actions: Actions) => (toDos: ToDo[]) => {
 const actions = createActions(store);
 const renderer = renderApp(actions);
 
-const storeObserver: Observer<ToDo[]> = {
-    next: (value: ToDo[]) => {
-        renderer(value)
-    }
+const storeObserver: Observer<AppState> = {
+    next: (value: AppState) => renderer(value)
 }
 
 store.subscribe(storeObserver);
 
 // initial state for the store
-if (store.getAll().length === 0) {
-    store.save([{
-        id: Date.now(),
-        completed: true,
-        note: "Add TypeScript"
-    }, {
-        id: Date.now(),
-        completed: false,
-        note: "Make Modules Work"
-    }, {
-        id: Date.now(),
-        completed: false,
-        note: "Render on store change"
-    }]);
+const toDos = store.getState().toDos;
+if (!toDos || toDos.length === 0) {
+    store.save({
+        filter: FilterType.All,
+        toDos: [{
+            id: Date.now(),
+            completed: true,
+            note: "Add TypeScript"
+        }, {
+            id: Date.now()+1,
+            completed: false,
+            note: "Make Modules Work"
+        }, {
+            id: Date.now()+2,
+            completed: false,
+            note: "Render on store change"
+        }]
+    });
 } else {
-    renderer(store.getAll());
+    renderer(store.getState());
 }
