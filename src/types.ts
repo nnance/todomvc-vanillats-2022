@@ -1,7 +1,3 @@
-export type Observer<T> = {
-    next: (value: T) => void
-}
-
 export type ToDo = {
     id: number,
     completed: boolean,
@@ -27,17 +23,21 @@ export enum ActionTypes {
     SetFilter,
 }
 
-export type Action = {
-    type: ActionTypes,
+export type Observer<T> = {
+    next: (value: T) => void
+}
+
+export type Action<T> = {
+    type: T,
     payload?: any,
 }
 
-export type Reducer = (state: AppState, action: Action) => AppState;
-export type Dispatcher = (action: Action) => void;
+export type Reducer<T, U> = (state: T, action: U) => T;
+export type Dispatcher<T> = (action: T) => void;
 
-export type AppStore = {
-    getState: () => AppState,
-    subscribe: (observer: Observer<AppState>) => { unsubscribe: () => void }
-    dispatch: Dispatcher,
+export type Store<T, U> = {
+    getState: () => T,
+    subscribe: (observer: Observer<T>) => { unsubscribe: () => void }
+    dispatch: Dispatcher<U>,
 };
 

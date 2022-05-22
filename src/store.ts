@@ -1,23 +1,23 @@
-import { Observer, AppStore, AppState, FilterType, Reducer, Action } from "./types.js";
+import { Observer, Reducer, Store } from "./types.js";
 
-export const createStorage = (reducer: Reducer, localStorageKey: string): AppStore => {
-    const subscribers: Observer<AppState>[] = [];
+export function createStorage<T,U>(reducer: Reducer<T, U>, localStorageKey: string, defaultState?: T): Store<T, U> {
+    const subscribers: Observer<T>[] = [];
     
-    const getState = (): AppState => {
+    const getState = (): T => {
         const state = localStorage.getItem(localStorageKey);
-        return state ? JSON.parse(state) : { toDos: [], filter: FilterType.All };
+        return state ? JSON.parse(state) : defaultState;
     }
 
-    const save = (newValue: AppState) => {
+    const save = (newValue: T) => {
         localStorage.setItem(localStorageKey, JSON.stringify(newValue));
         return newValue
     }
 
-    const notify = (newValue: AppState) => {
+    const notify = (newValue: T) => {
         subscribers.forEach(subscriber => subscriber.next(newValue));
     }
 
-    const subscribe = (observer: Observer<AppState>) => {
+    const subscribe = (observer: Observer<T>) => {
         subscribers.push(observer);
         notify(getState());
 
@@ -31,10 +31,8 @@ export const createStorage = (reducer: Reducer, localStorageKey: string): AppSto
         }
     }
 
-    const dispatch = (action: Action) => {
-        const newState = reducer(getState(), action);
-        save(newState);
-        notify(newState);
+    const dispatch = (action: U) => {
+        notify(save(reducer(getState(), action)));
     }
 
     return { getState, subscribe, dispatch }

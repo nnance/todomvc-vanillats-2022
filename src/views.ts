@@ -1,7 +1,7 @@
 import { addListener, createElement, toDoFilter } from "./lib.js";
-import { ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js";
+import { Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js";
 
-const renderToDo = (todo: ToDo, dispatch: Dispatcher) => {
+const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
     const { completed, note, id } = todo;
 
     const li = createElement(`
@@ -20,7 +20,7 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher) => {
     return li;
 }
 
-const renderToDos = (filter: FilterType, toDos: ToDo[], dispatch: Dispatcher) => {
+const renderToDos = (filter: FilterType, toDos: ToDo[], dispatch: Dispatcher<Action<ActionTypes>>) => {
     const toDoElements = toDos.filter(toDoFilter(filter)).map(todo => {
         return renderToDo(todo, dispatch);
     });
@@ -35,7 +35,7 @@ const renderToDos = (filter: FilterType, toDos: ToDo[], dispatch: Dispatcher) =>
     return ul;
 };
 
-export const header = (dispatch: Dispatcher) => (toDos: ToDo[]) => {
+export const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
     const header = createElement(`
         <header class="header">
             <h1>todos</h1>
@@ -56,7 +56,7 @@ export const header = (dispatch: Dispatcher) => (toDos: ToDo[]) => {
     return header;
 }
 
-export const main = (dispatch: Dispatcher) => (filter: FilterType, toDos: ToDo[]) => {
+export const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
     const main = createElement(`
         <section class="main">
             <input id="toggle-all" class="toggle-all" type="checkbox">
@@ -71,7 +71,7 @@ export const main = (dispatch: Dispatcher) => (filter: FilterType, toDos: ToDo[]
     return main;
 }
 
-export const footer = (dispatch: Dispatcher) => (filter: FilterType, toDos: ToDo[]) => {
+export const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
     const footer = createElement(`
     <footer class="footer">
         <span class="todo-count"><strong>${toDos.filter(toDoFilter(filter)).length}</strong> item left</span>

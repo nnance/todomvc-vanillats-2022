@@ -1,10 +1,10 @@
 import { footer, header, main } from "./views.js";
 import { createStorage } from "./store.js"
-import { Observer, AppState, Action, ActionTypes, Dispatcher } from "./types.js"
+import { AppState, Action, ActionTypes, Dispatcher, FilterType } from "./types.js"
 
 //TODO - add tests
 
-const reducer = (state: AppState, action: Action): AppState => {
+const reducer = (state: AppState, action: Action<ActionTypes>): AppState => {
     switch (action.type) {
         case ActionTypes.ToggleAll:
             return { ...state, toDos: state.toDos.map(t => ({ ...t, completed: true })) }
@@ -21,9 +21,9 @@ const reducer = (state: AppState, action: Action): AppState => {
     }
 }
 
-const store = createStorage(reducer, 'todomvc-typescript-2002');
+const store = createStorage(reducer, 'todomvc-typescript-2002', { toDos: [], filter: FilterType.All });
 
-const renderApp = (dispatch: Dispatcher, { filter, toDos }: AppState) => {
+const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, { filter, toDos }: AppState) => {
 	// Your starting point. Enjoy the ride!
     const app = document.querySelector('.todoapp') as HTMLElement;
 
@@ -31,7 +31,7 @@ const renderApp = (dispatch: Dispatcher, { filter, toDos }: AppState) => {
         while (app.hasChildNodes()) {
             app.removeChild(app.lastChild!);
         }
-        app.appendChild(header(dispatch)(toDos));
+        app.appendChild(header(dispatch)());
         app.appendChild(main(dispatch)(filter, toDos));
         app.appendChild(footer(dispatch)(filter, toDos));
     }
