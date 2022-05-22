@@ -52,23 +52,4 @@ store.subscribe(storeObserver);
 
 // initial state for the store
 const toDos = store.getState().toDos;
-if (!toDos || toDos.length === 0) {
-    store.save({
-        filter: FilterType.All,
-        toDos: [{
-            id: Date.now(),
-            completed: true,
-            note: "Add TypeScript"
-        }, {
-            id: Date.now()+1,
-            completed: false,
-            note: "Make Modules Work"
-        }, {
-            id: Date.now()+2,
-            completed: false,
-            note: "Render on store change"
-        }]
-    });
-} else {
-    renderer(store.getState());
-}
+renderer(store.getState());
