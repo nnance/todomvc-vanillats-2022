@@ -13,18 +13,6 @@ export const addListener = (el: HTMLElement, selector: string, event: string, ha
         handler(e, el);
     });
 }
-const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
-    switch (filter) {
-        case FilterType.All:
-            return true;
-        case FilterType.Active:
-            return !todo.completed;
-        case FilterType.Completed:
-            return todo.completed;
-        default:
-            return false;
-    }
-}
 const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
     const { completed, note, id } = todo;
 
