@@ -1,18 +1,40 @@
 import { Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js";
 
-export type DelegateHandler = (event?: Event, el?: HTMLElement) => void;
+type DelegateHandler = (event?: Event, el?: HTMLElement) => void;
 
-export const createElement = (html: string): HTMLElement => {
+const createElement = (html: string): HTMLElement => {
     const template = document.createElement('template');
     template.innerHTML = html;
     return template.content.firstElementChild as HTMLElement;
 }
 
-export const addListener = (el: HTMLElement, selector: string, event: string, handler: DelegateHandler) => {
-    el.querySelector(selector)?.addEventListener(event, e => {
-        handler(e, el);
-    });
+const createDelegate = () => {
+    type EventDelegate = {
+        event: string,
+        selector: string,
+        handler: DelegateHandler,
+    }
+
+    const delegates: EventDelegate[] = [];
+
+    return (selector: string, event: string, handler: DelegateHandler) => {
+        const delegate = delegates.find(d => d.event === event && d.selector === selector);
+
+        if (!delegate) {
+            delegates.push({ event, selector, handler });
+            document.addEventListener(event, e => {
+                if (e.target instanceof HTMLElement) {
+                    delegates
+                        .filter(d => d.event === event && (e.target as HTMLElement).matches(d.selector))
+                        .forEach(({handler}) => handler(e, e.target as HTMLElement));
+                }
+            });
+        }
+    }
 }
+
+const addListener = createDelegate();
+
 const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
     const { completed, note, id } = todo;
 
@@ -27,8 +49,6 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
         </li>
     `);
 
-    addListener(li, `.toggle`, `click`, () => dispatch({ type: ActionTypes.ToggleCompleted, payload: id }));
-
     return li;
 }
 
@@ -39,6 +59,10 @@ const renderToDos = (toDos: ToDo[], dispatch: Dispatcher<Action<ActionTypes>>) =
     `);
 
     toDos.map(todo => renderToDo(todo, dispatch)).forEach(li => ul.appendChild(li));
+
+    addListener(`.toggle`, `click`, (e, el) => {
+        dispatch({ type: ActionTypes.ToggleCompleted, payload: parseInt(el!.dataset.id!) });
+    });
 
     return ul;
 };
@@ -51,7 +75,7 @@ export const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
         </header>
     `);
 
-    addListener(header, `.new-todo`, `keyup`, (event?: Event) => {
+    addListener(`.new-todo`, `keyup`, (event?: Event) => {
         const e = event as KeyboardEvent;
         if (e && e.key === "Enter" && e.target instanceof HTMLInputElement) {
             const input = e.target as HTMLInputElement;
@@ -74,7 +98,7 @@ export const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[
 
     main.appendChild(renderToDos(toDos, dispatch));
 
-    addListener(main, `.toggle-all`, `click`, () => { dispatch({ type: ActionTypes.ToggleAll }); });
+    addListener(`.toggle-all`, `click`, () => { dispatch({ type: ActionTypes.ToggleAll }); });
 
     return main;
 }
@@ -99,9 +123,9 @@ export const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: Fi
 
     `);
 
-    addListener(footer, `#filter-all`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.All }));
-    addListener(footer, `#filter-active`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Active }));
-    addListener(footer, `#filter-completed`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Completed }));
+    addListener(`#filter-all`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.All }));
+    addListener(`#filter-active`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Active }));
+    addListener(`#filter-completed`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Completed }));
 
     return footer;
 }
