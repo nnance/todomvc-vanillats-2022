@@ -1,6 +1,11 @@
 import { Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js";
 
 type DelegateHandler = (event?: Event, el?: HTMLElement) => void;
+type EventDelegate = {
+    event: string,
+    selector: string,
+    handler: DelegateHandler,
+}
 
 const createElement = (html: string): HTMLElement => {
     const template = document.createElement('template');
@@ -9,26 +14,20 @@ const createElement = (html: string): HTMLElement => {
 }
 
 const createDelegate = () => {
-    type EventDelegate = {
-        event: string,
-        selector: string,
-        handler: DelegateHandler,
-    }
-
     const delegates: EventDelegate[] = [];
 
     return (selector: string, event: string, handler: DelegateHandler) => {
-        const delegate = delegates.find(d => d.event === event && d.selector === selector);
-
-        if (!delegate) {
-            delegates.push({ event, selector, handler });
+        // add listener for first event delegate
+        if (!delegates.find(d => d.event === event)) {
             document.addEventListener(event, e => {
-                if (e.target instanceof HTMLElement) {
-                    delegates
-                        .filter(d => d.event === event && (e.target as HTMLElement).matches(d.selector))
-                        .forEach(({handler}) => handler(e, e.target as HTMLElement));
-                }
+                delegates
+                    .filter(d => (e.target as HTMLElement).matches(d.selector))
+                    .forEach(d => d.handler(e, e.target as HTMLElement));
             });
+        } 
+        // add delegate for selector
+        if (!delegates.find(d => d.event === event && d.selector === selector)) {
+            delegates.push({ event, selector, handler });
         }
     }
 }
@@ -49,25 +48,27 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
         </li>
     `);
 
+    addListener(`.toggle`, `click`, (e, el) => dispatch({
+        type: ActionTypes.ToggleCompleted,
+        payload: parseInt(el!.dataset.id!)
+    }));
+
     return li;
 }
 
 const renderToDos = (toDos: ToDo[], dispatch: Dispatcher<Action<ActionTypes>>) => {
     const ul = createElement(`
         <ul class="todo-list">
+            ${toDos.map(todo => renderToDo(todo, dispatch).outerHTML).join('')}
         </ul>
     `);
 
-    toDos.map(todo => renderToDo(todo, dispatch)).forEach(li => ul.appendChild(li));
-
-    addListener(`.toggle`, `click`, (e, el) => {
-        dispatch({ type: ActionTypes.ToggleCompleted, payload: parseInt(el!.dataset.id!) });
-    });
+    // toDos.map(todo => renderToDo(todo, dispatch)).forEach(li => ul.appendChild(li));
 
     return ul;
 };
 
-export const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
+const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
     const header = createElement(`
         <header class="header">
             <h1>todos</h1>
@@ -75,10 +76,10 @@ export const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
         </header>
     `);
 
-    addListener(`.new-todo`, `keyup`, (event?: Event) => {
+    addListener(`.new-todo`, `keyup`, (event, el) => {
         const e = event as KeyboardEvent;
-        if (e && e.key === "Enter" && e.target instanceof HTMLInputElement) {
-            const input = e.target as HTMLInputElement;
+        if (e && e.key === "Enter" && el instanceof HTMLInputElement) {
+            const input = el as HTMLInputElement;
             if (input.value.length > 0) {
                 dispatch({ type: ActionTypes.AddItem, payload: input.value });
             }
@@ -88,22 +89,23 @@ export const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
     return header;
 }
 
-export const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[]) => {
+const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[]) => {
     const main = createElement(`
         <section class="main">
             <input id="toggle-all" class="toggle-all" type="checkbox">
             <label for="toggle-all">Mark all as complete</label>
+            ${renderToDos(toDos, dispatch).outerHTML}
         </section>
     `);
 
-    main.appendChild(renderToDos(toDos, dispatch));
+    // main.appendChild(renderToDos(toDos, dispatch));
 
     addListener(`.toggle-all`, `click`, () => { dispatch({ type: ActionTypes.ToggleAll }); });
 
     return main;
 }
 
-export const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
+const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
     const footer = createElement(`
     <footer class="footer">
         <span class="todo-count"><strong>${toDos.length}</strong> item left</span>
@@ -128,4 +130,14 @@ export const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: Fi
     addListener(`#filter-completed`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Completed }));
 
     return footer;
+}
+
+export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
+    return createElement(`
+        <div>
+            ${header(dispatch)().outerHTML}
+            ${main(dispatch)(toDos).outerHTML}
+            ${footer(dispatch)(filter, toDos)}
+        </div>
+    `)
 }

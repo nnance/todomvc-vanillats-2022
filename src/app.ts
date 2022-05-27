@@ -1,4 +1,4 @@
-import { footer, header, main } from "./views.js";
+import { containerView } from "./views.js";
 import { createStorage } from "./store.js"
 import { AppState, Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js"
 import { reducer } from "./reducer.js";
@@ -24,13 +24,13 @@ const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, { filter, toDos }:
 	// Your starting point. Enjoy the ride!
     const app = document.querySelector('.todoapp') as HTMLElement;
 
-    if (app) {
-        while (app.hasChildNodes()) {
-            app.removeChild(app.lastChild!);
-        }
-        app.appendChild(header(dispatch)());
-        app.appendChild(main(dispatch)(filterToDos));
-        app.appendChild(footer(dispatch)(filter, filterToDos));
+    const container = containerView(dispatch)(filter, toDos);
+    const existingContainer = app.querySelector(container.nodeName) as HTMLElement;
+
+    if (existingContainer) {
+        app.replaceChild(container, existingContainer);
+    } else {
+        app.appendChild(container);
     }
 }
 
