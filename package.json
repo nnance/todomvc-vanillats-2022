@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "build": "tsc"
+  },
+  "private": true,
+  "dependencies": {
+    "todomvc-app-css": "^2.0.0",
+    "todomvc-common": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.5.1",
+    "jest": "^28.1.0",
+    "jest-environment-jsdom": "^28.1.0",
+    "jsdom": "^19.0.0",
+    "typescript": "^4.7.2"
+  },
+  "type": "module"
+}

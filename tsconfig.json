@@ -1,14 +1,16 @@
 {
     "compilerOptions": {
       "target": "ES2018",
-      "module": "es2020",
+      "module": "ES6",
       "strict": true,
       "moduleResolution": "node",
+      "types": [
+        "node", "jest"
+      ],
       "allowSyntheticDefaultImports": true,
       "esModuleInterop": true,                  /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      // "outFile": "./js/app.js",                       /* Concatenate and emit output to single file. */
       "outDir": "./js",                        /* Redirect output structure to the directory. */
       "rootDir": "./src",                       /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */  
     }
