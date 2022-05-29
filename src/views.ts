@@ -37,7 +37,7 @@ const addListener = createDelegate();
 const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
     const { completed, note, id } = todo;
 
-    const li = createElement(`
+    const li = `
         <li ${completed ? `class="completed"` : ``}>
             <div class="view">
                 <input class="toggle" type="checkbox" ${completed ? `checked` : ``} data-id="${id}">
@@ -46,7 +46,7 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
             </div>
             <input class="edit" value="${id}">
         </li>
-    `);
+    `;
 
     addListener(`.toggle`, `click`, (e, el) => dispatch({
         type: ActionTypes.ToggleCompleted,
@@ -62,24 +62,22 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
 }
 
 const renderToDos = (toDos: ToDo[], dispatch: Dispatcher<Action<ActionTypes>>) => {
-    const ul = createElement(`
+    const ul = `
         <ul class="todo-list">
-            ${toDos.map(todo => renderToDo(todo, dispatch).outerHTML).join('')}
+            ${toDos.map(todo => renderToDo(todo, dispatch)).join('')}
         </ul>
-    `);
-
-    // toDos.map(todo => renderToDo(todo, dispatch)).forEach(li => ul.appendChild(li));
+    `;
 
     return ul;
 };
 
 const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
-    const header = createElement(`
+    const header = `
         <header class="header">
             <h1>todos</h1>
             <input class="new-todo" placeholder="What needs to be done?" autofocus>
         </header>
-    `);
+    `;
 
     addListener(`.new-todo`, `keyup`, (event, el) => {
         const e = event as KeyboardEvent;
@@ -95,13 +93,13 @@ const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
 }
 
 const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[]) => {
-    const main = createElement(`
+    const main = `
         <section class="main">
             <input id="toggle-all" class="toggle-all" type="checkbox">
             <label for="toggle-all">Mark all as complete</label>
-            ${renderToDos(toDos, dispatch).outerHTML}
+            ${renderToDos(toDos, dispatch)}
         </section>
-    `);
+    `;
 
     // main.appendChild(renderToDos(toDos, dispatch));
 
@@ -111,7 +109,7 @@ const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[]) => {
 }
 
 const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
-    const footer = createElement(`
+    const footer = `
     <footer class="footer">
         <span class="todo-count"><strong>${toDos.length}</strong> item left</span>
         <ul class="filters">
@@ -127,8 +125,7 @@ const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterTyp
         </ul>
         <button class="clear-completed">Clear completed</button>
     </footer>
-
-    `);
+    `;
 
     addListener(`#filter-all`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.All }));
     addListener(`#filter-active`, `click`, () => dispatch({ type: ActionTypes.SetFilter, payload: FilterType.Active }));
@@ -155,9 +152,9 @@ export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => ({fi
 
     return createElement(`
         <div>
-            ${header(dispatch)().outerHTML}
-            ${main(dispatch)(filterToDos).outerHTML}
-            ${footer(dispatch)(filter, filterToDos).outerHTML}
+            ${header(dispatch)()}
+            ${main(dispatch)(filterToDos)}
+            ${footer(dispatch)(filter, filterToDos)}
         </div>
     `)
 }
