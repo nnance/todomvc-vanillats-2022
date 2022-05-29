@@ -5,26 +5,11 @@ import { reducer } from "./reducer.js";
 
 //TODO - add tests
 
-const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
-    switch (filter) {
-        case FilterType.All:
-            return true;
-        case FilterType.Active:
-            return !todo.completed;
-        case FilterType.Completed:
-            return todo.completed;
-        default:
-            return false;
-    }
-}
-
-const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, { filter, toDos }: AppState) => {
-    const filterToDos = toDos.filter(toDoFilter(filter))
-
+const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, state: AppState) => {
 	// Your starting point. Enjoy the ride!
     const app = document.querySelector('.todoapp') as HTMLElement;
 
-    const container = containerView(dispatch)(filter, toDos);
+    const container = containerView(dispatch)(state);
     const existingContainer = app.querySelector(container.nodeName) as HTMLElement;
 
     if (existingContainer) {

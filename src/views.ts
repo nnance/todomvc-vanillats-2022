@@ -1,4 +1,4 @@
-import { Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js";
+import { Action, ActionTypes, AppState, Dispatcher, FilterType, ToDo } from "./types.js";
 
 type DelegateHandler = (event?: Event, el?: HTMLElement) => void;
 type EventDelegate = {
@@ -42,7 +42,7 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
             <div class="view">
                 <input class="toggle" type="checkbox" ${completed ? `checked` : ``} data-id="${id}">
                 <label>${note}</label>
-                <button class="destroy"></button>
+                <button class="destroy" data-id="${id}"></button>
             </div>
             <input class="edit" value="${id}">
         </li>
@@ -50,6 +50,11 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
 
     addListener(`.toggle`, `click`, (e, el) => dispatch({
         type: ActionTypes.ToggleCompleted,
+        payload: parseInt(el!.dataset.id!)
+    }));
+
+    addListener('.destroy', 'click', (e, el) => dispatch({
+        type: ActionTypes.DestroyItem,
         payload: parseInt(el!.dataset.id!)
     }));
 
@@ -132,12 +137,27 @@ const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterTyp
     return footer;
 }
 
-export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
+const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
+    switch (filter) {
+        case FilterType.All:
+            return true;
+        case FilterType.Active:
+            return !todo.completed;
+        case FilterType.Completed:
+            return todo.completed;
+        default:
+            return false;
+    }
+}
+
+export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => ({filter, toDos}: AppState) => {
+    const filterToDos = toDos.filter(toDoFilter(filter))
+
     return createElement(`
         <div>
             ${header(dispatch)().outerHTML}
-            ${main(dispatch)(toDos).outerHTML}
-            ${footer(dispatch)(filter, toDos)}
+            ${main(dispatch)(filterToDos).outerHTML}
+            ${footer(dispatch)(filter, filterToDos).outerHTML}
         </div>
     `)
 }
