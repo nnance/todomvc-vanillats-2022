@@ -1,15 +1,20 @@
 import { Observer, Reducer, Store } from "./types.js";
 
-export function createStorage<T,U>(reducer: Reducer<T, U>, localStorageKey: string, defaultState?: T): Store<T, U> {
+export type Persistance = {
+    getItem: () => string | null,
+    setItem: (value: string) => void
+}
+
+export function createStorage<T,U>(reducer: Reducer<T, U>, storage: Persistance, defaultState?: T): Store<T, U> {
     const subscribers: Observer<T>[] = [];
     
     const getState = (): T => {
-        const state = localStorage.getItem(localStorageKey);
+        const state = storage.getItem();
         return state ? JSON.parse(state) : defaultState;
     }
 
     const save = (newValue: T) => {
-        localStorage.setItem(localStorageKey, JSON.stringify(newValue));
+        storage.setItem(JSON.stringify(newValue));
         return newValue
     }
 
