@@ -10,15 +10,16 @@ describe('containerView', () => {
     };
 
     const renderer = containerView(dispatch);
+    const container = renderer(state);
 
     test("rendering header", () => {
-        expect(renderer(state).querySelector('.header')).toBeInstanceOf(Element);
+        expect(container.querySelector('.header')).toBeInstanceOf(Element);
     });
     test("rendering main", () => {
-        expect(renderer(state).querySelector('.main')).toBeInstanceOf(Element);
+        expect(container.querySelector('.main')).toBeInstanceOf(Element);
     });
     test("rendering footer", () => {
-        expect(renderer(state).querySelector('.footer')).toBeInstanceOf(Element);
+        expect(container.querySelector('.footer')).toBeInstanceOf(Element);
     });
 });
 

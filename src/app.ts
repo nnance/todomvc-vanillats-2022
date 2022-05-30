@@ -7,17 +7,12 @@ import { reducer } from "./reducer.js";
 
 const storageKey = 'todomvc-typescript-2002';
 
-const renderApp = (dispatch: Dispatcher<Action<ActionTypes>>, state: AppState) => {
-	// Your starting point. Enjoy the ride!
-    const app = document.querySelector('.todoapp') as HTMLElement;
+export const renderApp = (app: HTMLElement, dispatch: Dispatcher<Action<ActionTypes>>) => {
+    const renderer = containerView(dispatch);
 
-    const container = containerView(dispatch)(state);
-    const existingContainer = app.querySelector(container.nodeName) as HTMLElement;
-
-    if (existingContainer) {
-        app.replaceChild(container, existingContainer);
-    } else {
-        app.appendChild(container);
+    return (state: AppState) => {
+        const container = renderer(state);
+        app.innerHTML = container.outerHTML;
     }
 }
 
@@ -25,8 +20,14 @@ const storage: Persistance = {
     getItem: () => localStorage.getItem(storageKey),
     setItem: (value: string) => localStorage.setItem(storageKey, value)
 }
-const store = createStorage(reducer, storage, { toDos: [], filter: FilterType.All });
 
-store.subscribe({
-    next: (value: AppState) => renderApp(store.dispatch, value)
-});
+const app = document.querySelector('.todoapp') as HTMLElement;
+
+if (app) {
+    const store = createStorage(reducer, storage, { toDos: [], filter: FilterType.All });
+    const renderer = renderApp(app, store.dispatch);
+
+    store.subscribe({
+        next: (value: AppState) => renderer(value)
+    });
+}
