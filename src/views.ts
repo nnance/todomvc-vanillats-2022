@@ -124,8 +124,6 @@ const main = (dispatch: Dispatcher<Action<ActionTypes>>, delegate: Delegate) => 
         </section>
     `;
 
-    // main.appendChild(renderToDos(toDos, dispatch));
-
     addListener(`.toggle-all`, `click`, () => { dispatch({ type: ActionTypes.ToggleAll }); });
 
     return main;
@@ -170,18 +168,21 @@ const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
     }
 }
 
-export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => ({filter, toDos}: AppState) => {
+export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => {
     const delegate = createDelegate();
-    const filterToDos = toDos.filter(toDoFilter(filter))
     const headerView = header(dispatch, delegate);
     const mainView = main(dispatch, delegate);
     const footerView = footer(dispatch, delegate);
 
-    return createElement(`
-        <div>
-            ${headerView()}
-            ${mainView(filterToDos)}
-            ${footerView(filter, filterToDos)}
-        </div>
-    `)
+    return ({filter, toDos}: AppState) => {
+        const filterToDos = toDos.filter(toDoFilter(filter))
+
+        return createElement(`
+            <div>
+                ${headerView()}
+                ${mainView(filterToDos)}
+                ${footerView(filter, filterToDos)}
+            </div>
+        `)
+    }
 }

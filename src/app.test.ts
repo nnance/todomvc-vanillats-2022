@@ -2,7 +2,7 @@ import { reducer } from "./reducer";
 import { createStorage, Persistance } from "./store";
 import { FilterType } from "./types";
 import { containerView, createDelegate } from "./views";
-import { getByText, queryAllByText, waitFor } from "@testing-library/dom";
+import { getAllByRole, getByLabelText, getByRole, getByText, queryAllByAttribute, queryAllByText, waitFor } from "@testing-library/dom";
 import { renderApp } from "./app";
 
 const storage = (): Persistance => {
@@ -33,22 +33,23 @@ describe("app smoke test", () => {
 });
 
 describe("filter refresh", () => {
-    const store = createStorage(reducer, storage());
-
     const elem = document.createElement("section");
-    document.body.appendChild(elem);
 
-    const renderer = renderApp(elem, store.dispatch);
+    beforeAll(() => {
+        document.body.appendChild(elem);
 
-    store.subscribe({
-        next: (value) => renderer(value)
+        const store = createStorage(reducer, storage());
+        const renderer = renderApp(elem, store.dispatch);
+        store.subscribe({
+            next: (value) => renderer(value)
+        });
     });
 
     afterAll(() => {
         document.body.removeChild(elem);
     });
 
-    it("should refresh the app when filter clicked", async () => {
+    it("should refresh the app when active filter clicked", async () => {
         getByText(document.body, "Active").click();
 
         await waitFor(() => {
@@ -56,7 +57,7 @@ describe("filter refresh", () => {
         });
     });
 
-    it("should refresh the app when filter clicked", async () => {
+    it("should refresh the app when completed filter clicked", async () => {
         getByText(document.body, "Completed").click();
 
         await waitFor(() => {
@@ -64,11 +65,72 @@ describe("filter refresh", () => {
         });
     });
 
-    it("should refresh the app when filter clicked", async () => {
+    it("should refresh the app when all filter clicked", async () => {
         getByText(document.body, "All").click();
 
         await waitFor(() => {
             expect(queryAllByText(elem, /task/).length).toBe(3);
+        });
+    });
+});
+
+describe("mark task completed", () => {
+    const elem = document.createElement("section");
+
+    beforeAll(() => {
+        document.body.appendChild(elem);
+
+        const store = createStorage(reducer, storage());
+        const renderer = renderApp(elem, store.dispatch);
+        store.subscribe({
+            next: (value) => renderer(value)
+        });
+    });
+
+    afterAll(() => {
+        document.body.removeChild(elem);
+    });
+
+    it("should mark item completed with checkbox clicked", async () => {
+        getAllByRole(document.body, "checkbox", { checked: false })[1].click();
+
+        await waitFor(() => {
+            expect(queryAllByAttribute("class", elem, "completed").length).toBe(2);
+        });
+    });
+
+    it("should mark item active with checkbox clicked", async () => {
+        getAllByRole(document.body, "checkbox", { checked: true })[0].click();
+
+        await waitFor(() => {
+            expect(queryAllByAttribute("class", elem, "completed").length).toBe(1);
+        });
+    });
+});
+
+describe("mark all completed", () => {
+    const elem = document.createElement("section");
+
+    beforeAll(() => {
+        document.body.appendChild(elem);
+
+        const store = createStorage(reducer, storage());
+        const renderer = renderApp(elem, store.dispatch);
+        store.subscribe({
+            next: (value) => renderer(value)
+        });
+
+    });
+
+    afterAll(() => {
+        document.body.removeChild(elem);
+    });
+
+    it("should mark all items completed with clicked", async () => {
+        getAllByRole(document.body, "checkbox", { checked: false })[0].click();
+
+        await waitFor(() => {
+            expect(queryAllByAttribute("class", elem, "completed").length).toBe(3);
         });
     });
 });
