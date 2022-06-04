@@ -3,7 +3,6 @@ import { createStorage, Persistance } from "./store.js"
 import { AppState, Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js"
 import { reducer } from "./reducer.js";
 
-// TODO - fix view tests to remove all handlers
 // TODO - create diff between changes and use a patch method to change the dom
 // TODO - move all library code to a separate file
 
