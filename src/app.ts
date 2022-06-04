@@ -2,6 +2,7 @@ import { containerView } from "./views.js";
 import { createStorage, Persistance } from "./store.js"
 import { AppState, Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js"
 import { reducer } from "./reducer.js";
+import { applyPatches, diff } from "./lib.js";
 
 // TODO - create diff between changes and use a patch method to change the dom
 // TODO - move all library code to a separate file
@@ -13,7 +14,7 @@ export const renderApp = (app: HTMLElement, dispatch: Dispatcher<Action<ActionTy
 
     return (state: AppState) => {
         const container = renderer(state);
-        app.innerHTML = container.outerHTML;
+        applyPatches(app, diff(app.firstElementChild, container));
     }
 }
 
