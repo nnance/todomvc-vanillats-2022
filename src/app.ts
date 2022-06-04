@@ -1,4 +1,4 @@
-import { containerView, createDelegate } from "./views.js";
+import { containerView } from "./views.js";
 import { createStorage, Persistance } from "./store.js"
 import { AppState, Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js"
 import { reducer } from "./reducer.js";
@@ -10,8 +10,7 @@ import { reducer } from "./reducer.js";
 const storageKey = 'todomvc-typescript-2002';
 
 export const renderApp = (app: HTMLElement, dispatch: Dispatcher<Action<ActionTypes>>) => {
-    const delegate = createDelegate();
-    const renderer = containerView(dispatch, delegate);
+    const renderer = containerView(dispatch);
 
     return (state: AppState) => {
         const container = renderer(state);

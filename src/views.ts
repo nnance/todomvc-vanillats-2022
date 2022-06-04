@@ -170,7 +170,8 @@ const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
     }
 }
 
-export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>, delegate: Delegate) => ({filter, toDos}: AppState) => {
+export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => ({filter, toDos}: AppState) => {
+    const delegate = createDelegate();
     const filterToDos = toDos.filter(toDoFilter(filter))
     const headerView = header(dispatch, delegate);
     const mainView = main(dispatch, delegate);
