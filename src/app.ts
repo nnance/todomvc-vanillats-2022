@@ -1,14 +1,17 @@
-import { containerView } from "./views.js";
+import { containerView, createDelegate } from "./views.js";
 import { createStorage, Persistance } from "./store.js"
 import { AppState, Action, ActionTypes, Dispatcher, FilterType, ToDo } from "./types.js"
 import { reducer } from "./reducer.js";
 
-//TODO - add tests
+// TODO - fix view tests to remove all handlers
+// TODO - create diff between changes and use a patch method to change the dom
+// TODO - move all library code to a separate file
 
 const storageKey = 'todomvc-typescript-2002';
 
 export const renderApp = (app: HTMLElement, dispatch: Dispatcher<Action<ActionTypes>>) => {
-    const renderer = containerView(dispatch);
+    const delegate = createDelegate();
+    const renderer = containerView(dispatch, delegate);
 
     return (state: AppState) => {
         const container = renderer(state);

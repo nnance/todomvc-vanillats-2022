@@ -7,16 +7,18 @@ type EventDelegate = {
     handler: DelegateHandler,
 }
 
+type Delegate = ReturnType<typeof createDelegate>;
+
 const createElement = (html: string): HTMLElement => {
     const template = document.createElement('template');
     template.innerHTML = html;
     return template.content.firstElementChild as HTMLElement;
 }
 
-const createDelegate = () => {
+export const createDelegate = () => {
     const delegates: EventDelegate[] = [];
 
-    return (selector: string, event: string, handler: DelegateHandler) => {
+    const addListener = (selector: string, event: string, handler: DelegateHandler) => {
         // add listener for first event delegate
         if (!delegates.find(d => d.event === event)) {
             document.addEventListener(event, e => {
@@ -30,11 +32,30 @@ const createDelegate = () => {
             delegates.push({ event, selector, handler });
         }
     }
+
+    const removeListener = (selector: string, event: string) => {
+        const index = delegates.findIndex(d => d.event === event && d.selector === selector);
+        if (index > -1) {
+            document.removeEventListener(event, delegates[index].handler);
+            delegates.splice(index, 1);
+        }
+    }
+
+    const removeAll = () => {
+        delegates.forEach(d => {
+            document.removeEventListener(d.event, d.handler);
+        });
+        delegates.splice(0, delegates.length);
+    }
+
+    return {
+        addListener,
+        removeListener,
+        removeAll
+    }
 }
 
-const addListener = createDelegate();
-
-const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
+const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>, { addListener }: Delegate) => {
     const { completed, note, id } = todo;
 
     const li = `
@@ -61,17 +82,17 @@ const renderToDo = (todo: ToDo, dispatch: Dispatcher<Action<ActionTypes>>) => {
     return li;
 }
 
-const renderToDos = (toDos: ToDo[], dispatch: Dispatcher<Action<ActionTypes>>) => {
+const renderToDos = (toDos: ToDo[], dispatch: Dispatcher<Action<ActionTypes>>, delegate: Delegate) => {
     const ul = `
         <ul class="todo-list">
-            ${toDos.map(todo => renderToDo(todo, dispatch)).join('')}
+            ${toDos.map(todo => renderToDo(todo, dispatch, delegate)).join('')}
         </ul>
     `;
 
     return ul;
 };
 
-const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
+const header = (dispatch: Dispatcher<Action<ActionTypes>>, { addListener }: Delegate) => () => {
     const header = `
         <header class="header">
             <h1>todos</h1>
@@ -92,12 +113,14 @@ const header = (dispatch: Dispatcher<Action<ActionTypes>>) => () => {
     return header;
 }
 
-const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[]) => {
+const main = (dispatch: Dispatcher<Action<ActionTypes>>, delegate: Delegate) => (toDos: ToDo[]) => {
+    const { addListener } = delegate;
+
     const main = `
         <section class="main">
             <input id="toggle-all" class="toggle-all" type="checkbox">
             <label for="toggle-all">Mark all as complete</label>
-            ${renderToDos(toDos, dispatch)}
+            ${renderToDos(toDos, dispatch, delegate)}
         </section>
     `;
 
@@ -108,7 +131,7 @@ const main = (dispatch: Dispatcher<Action<ActionTypes>>) => (toDos: ToDo[]) => {
     return main;
 }
 
-const footer = (dispatch: Dispatcher<Action<ActionTypes>>) => (filter: FilterType, toDos: ToDo[]) => {
+const footer = (dispatch: Dispatcher<Action<ActionTypes>>, { addListener }: Delegate) => (filter: FilterType, toDos: ToDo[]) => {
     const footer = `
     <footer class="footer">
         <span class="todo-count"><strong>${toDos.length}</strong> item left</span>
@@ -147,14 +170,17 @@ const toDoFilter = (filter: FilterType) => (todo: ToDo) => {
     }
 }
 
-export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>) => ({filter, toDos}: AppState) => {
+export const containerView = (dispatch: Dispatcher<Action<ActionTypes>>, delegate: Delegate) => ({filter, toDos}: AppState) => {
     const filterToDos = toDos.filter(toDoFilter(filter))
+    const headerView = header(dispatch, delegate);
+    const mainView = main(dispatch, delegate);
+    const footerView = footer(dispatch, delegate);
 
     return createElement(`
         <div>
-            ${header(dispatch)()}
-            ${main(dispatch)(filterToDos)}
-            ${footer(dispatch)(filter, filterToDos)}
+            ${headerView()}
+            ${mainView(filterToDos)}
+            ${footerView(filter, filterToDos)}
         </div>
     `)
 }

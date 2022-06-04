@@ -1,5 +1,5 @@
 import { AppState, FilterType } from "./types";
-import { containerView } from "./views";
+import { containerView, createDelegate } from "./views";
 
 describe('containerView', () => {
     const dispatch = () => { };
@@ -9,7 +9,7 @@ describe('containerView', () => {
         filter: FilterType.All
     };
 
-    const renderer = containerView(dispatch);
+    const renderer = containerView(dispatch, createDelegate());
     const container = renderer(state);
 
     test("rendering header", () => {
@@ -35,7 +35,7 @@ describe('rendering main with filters', () => {
         filter: FilterType.All
     };
 
-    const renderer = containerView(dispatch);
+    const renderer = containerView(dispatch, createDelegate());
 
     test("all filter should render two to dos", () => {
         expect(renderer(state).querySelectorAll(".todo-list li").length).toBe(3);
