@@ -3,6 +3,14 @@
 > Official description of the framework (from its website)
 
 
+
+## Getting Started
+
+- Install an http server (e.g. [Node.js](http://nodejs.org))
+- Run the following command: npm install -g http-server
+- Run the following command: http-server -c-1
+- Open the browser and navigate to http://localhost:8080
+
 ## Resources
 
 - [Website]()
