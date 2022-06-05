@@ -54,6 +54,55 @@ export const createDelegate = () => {
 }
 
 export const diff = (parentNode: Element, oldTree: Element | null, newTree: Element | null) => {
+
+    const walkAttributes = (oldNode: Element, newNode: Element) => {
+        const oldAttrs = oldNode ? Array.from(oldNode.attributes) : [];
+        const newAttrs = newNode ? Array.from(newNode.attributes) : [];
+
+        const oldAttrMap = oldAttrs.reduce((map, attr) => {
+            map[attr.name] = attr.value;
+            return map;
+        }, {} as { [key: string]: string });
+        const newAttrMap = newAttrs.reduce((map, attr) => {
+            map[attr.name] = attr.value;
+            return map;
+        }, {} as { [key: string]: string });
+
+        const attrPatches: Patch[] = [];
+        for (const key in oldAttrMap) {
+            if (newAttrMap[key] !== oldAttrMap[key]) {
+                attrPatches.push({
+                    type: 'attribute',
+                    parentNode: oldNode,
+                    name: key,
+                    value: newAttrMap[key]
+                });
+            }
+        }
+        for (const key in newAttrMap) {
+            if (!oldAttrMap[key]) {
+                attrPatches.push({
+                    type: 'attribute',
+                    parentNode: oldNode,
+                    name: key,
+                    value: newAttrMap[key]
+                });
+            }
+        }
+        return attrPatches;
+    }
+
+    const walkChildren = (oldNode: Element, newNode: Element) => {
+        const oldChildren = Array.from(oldNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
+        const newChildren = Array.from(newNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
+
+        const children = oldChildren.length > newChildren.length ? oldChildren : newChildren;
+        return children.reduce((patches, child, i) => {
+            const oldChild = oldChildren.length > i ? oldChildren[i] as HTMLElement : null;
+            const newChild = newChildren.length > i ? newChildren[i] as HTMLElement : null;
+            return [...walk(oldNode, oldChild, newChild, patches)];
+        }, [] as Patch[]);
+    }
     
     const walk = (parentNode: Element, oldNode: Element | null, newNode: Element | null, patches: Patch[] = []): Patch[] => {
         if (oldNode === null && newNode !== null) {
@@ -67,15 +116,7 @@ export const diff = (parentNode: Element, oldTree: Element | null, newTree: Elem
                 return [...patches, { type: 'replace', parentNode, oldNode, newNode }];
             }
             if (oldNode.nodeType === Node.ELEMENT_NODE) {
-                const oldChildren = Array.from(oldNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
-                const newChildren = Array.from(newNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
-
-                const children = oldChildren.length > newChildren.length ? oldChildren : newChildren;
-                return children.reduce((patches, child, i) => {
-                    const oldChild = oldChildren.length > i ? oldChildren[i] as HTMLElement : null;
-                    const newChild = newChildren.length > i ? newChildren[i] as HTMLElement : null;
-                    return [...walk(oldNode, oldChild, newChild, patches)];
-                }, patches);
+                return [...patches, ...walkChildren(oldNode, newNode), ...walkAttributes(oldNode, newNode)];
             }
             if (oldNode.nodeType === Node.ATTRIBUTE_NODE) {
                 if (oldNode.nodeValue !== newNode.nodeValue) {
@@ -94,11 +135,14 @@ export const diff = (parentNode: Element, oldTree: Element | null, newTree: Elem
     return walk(parentNode, oldTree, newTree);
 }
 
+// TODO: Add conditional types based on the type of the element
 export type Patch = {
-    type: 'replace' | 'remove' | 'append',
+    type: 'replace' | 'remove' | 'append' | 'attribute',
     parentNode: ParentNode,
     newNode?: Element,
     oldNode?: Element,
+    name?: string,
+    value?: string
 }
 
 export const applyPatches = (patches: Patch[]) => {
@@ -111,6 +155,8 @@ export const applyPatches = (patches: Patch[]) => {
             parentNode.removeChild(oldNode);
         } else if (type === 'append' && newNode && parentNode) {
             parentNode.appendChild(newNode);
+        } else if (type === 'attribute' && parentNode) {
+            (parentNode as HTMLElement).setAttribute(patch.name!, patch.value!);
         }
     });
 }

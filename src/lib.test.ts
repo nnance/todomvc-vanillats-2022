@@ -25,6 +25,15 @@ describe("diff", () => {
         const oldTree = null;
         expect(diff(root, oldTree, newTree).filter(p => p.type === 'append')).toHaveLength(1);
     });
+    it("should return an array with an attribute patch when the class changes", () => {
+        const root = document.createElement("div");
+        const newTree = document.createElement("div");
+        newTree.className = "foo";
+        const oldTree = document.createElement("div");
+        oldTree.className = "bar";
+        root.appendChild(oldTree);
+        expect(diff(root, oldTree, newTree).filter(p => p.type === 'attribute')).toHaveLength(1);
+    });
     it("should return an array with a remove patch when child count is different", () => {
         const root = document.createElement("div");
         const oldTree = document.createElement("div");
