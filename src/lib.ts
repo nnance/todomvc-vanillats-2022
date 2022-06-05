@@ -155,16 +155,16 @@ export type Patch = {
 
 export const applyPatches = (patches: Patch[]) => {
     patches.forEach(patch => {
-        const { type, newNode, oldNode, parentNode } = patch;
+        const { type, newNode, oldNode, parentNode, name, value } = patch;
 
-        if (type === 'replace' && newNode && oldNode && parentNode) {
+        if (type === 'replace' && newNode && oldNode) {
             parentNode.replaceChild(newNode, oldNode);
-        } else if (type === 'remove' && oldNode && parentNode) {
+        } else if (type === 'remove' && oldNode) {
             parentNode.removeChild(oldNode);
-        } else if (type === 'append' && newNode && parentNode) {
+        } else if (type === 'append' && newNode) {
             parentNode.appendChild(newNode);
-        } else if (type === 'attribute' && parentNode) {
-            (parentNode as HTMLElement).setAttribute(patch.name!, patch.value!);
+        } else if (type === 'attribute' && name) {
+            (parentNode as HTMLElement).setAttribute(name, value!);
         }
     });
 }
