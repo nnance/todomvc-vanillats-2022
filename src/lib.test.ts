@@ -19,7 +19,7 @@ describe("diff", () => {
         const newTree = null;
         expect(diff(root, oldTree, newTree).filter(p => p.type === 'remove')).toHaveLength(1);
     });
-    it("should return an array with a append patch when the node is null", () => {
+    it("should return an array with an append patch when the node is null", () => {
         const root = document.createElement("div");
         const newTree = document.createElement("div");
         const oldTree = null;
@@ -42,6 +42,27 @@ describe("diff", () => {
             <li>2</li>
         </ul>`
         expect(diff(root, oldTree, newTree).filter(p => p.type === 'remove')).toHaveLength(1);
+    });
+    it("should return multiple changes", () => {
+        const root = document.createElement("div");
+        const oldTree = document.createElement("div");
+        oldTree.innerHTML = `
+        <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+        </ul>
+        <div>
+            <p>Hello</p>
+        </div>`
+
+        const newTree = document.createElement("div");
+        newTree.innerHTML = `
+        <ul>
+            <li>1</li>
+            <li>2</li>
+        </ul>`
+        expect(diff(root, oldTree, newTree).filter(p => p.type === 'remove')).toHaveLength(2);
     });
 });
 

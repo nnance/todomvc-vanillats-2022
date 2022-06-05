@@ -1,3 +1,58 @@
+type DelegateHandler = (event?: Event, el?: HTMLElement) => void;
+type EventDelegate = {
+    event: string,
+    selector: string,
+    handler: DelegateHandler,
+}
+
+export type Delegate = ReturnType<typeof createDelegate>;
+
+export const createElement = (html: string): HTMLElement => {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.firstElementChild as HTMLElement;
+}
+
+export const createDelegate = () => {
+    const delegates: EventDelegate[] = [];
+
+    const addListener = (selector: string, event: string, handler: DelegateHandler) => {
+        // add listener for first event delegate
+        if (!delegates.find(d => d.event === event)) {
+            document.addEventListener(event, e => {
+                delegates
+                    .filter(d => (e.target as HTMLElement).matches(d.selector))
+                    .forEach(d => d.handler(e, e.target as HTMLElement));
+            });
+        } 
+        // add delegate for selector
+        if (!delegates.find(d => d.event === event && d.selector === selector)) {
+            delegates.push({ event, selector, handler });
+        }
+    }
+
+    const removeListener = (selector: string, event: string) => {
+        const index = delegates.findIndex(d => d.event === event && d.selector === selector);
+        if (index > -1) {
+            document.removeEventListener(event, delegates[index].handler);
+            delegates.splice(index, 1);
+        }
+    }
+
+    const removeAll = () => {
+        delegates.forEach(d => {
+            document.removeEventListener(d.event, d.handler);
+        });
+        delegates.splice(0, delegates.length);
+    }
+
+    return {
+        addListener,
+        removeListener,
+        removeAll
+    }
+}
+
 export const diff = (parentNode: Element, oldTree: Element | null, newTree: Element | null) => {
     
     const walk = (parentNode: Element, oldNode: Element | null, newNode: Element | null, patches: Patch[] = []): Patch[] => {
@@ -39,7 +94,7 @@ export const diff = (parentNode: Element, oldTree: Element | null, newTree: Elem
     return walk(parentNode, oldTree, newTree);
 }
 
-type Patch = {
+export type Patch = {
     type: 'replace' | 'remove' | 'append',
     parentNode: ParentNode,
     newNode?: Element,

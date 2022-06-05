@@ -1,7 +1,7 @@
 import { reducer } from "./reducer";
 import { createStorage, Persistance } from "./store";
 import { FilterType } from "./types";
-import { containerView, createDelegate } from "./views";
+import { containerView } from "./views";
 import { getAllByRole, getByLabelText, getByRole, getByText, queryAllByAttribute, queryAllByText, waitFor } from "@testing-library/dom";
 import { renderApp } from "./app";
 
