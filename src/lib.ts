@@ -1,62 +1,59 @@
-export const diff = (oldTree: Element | null, newTree: Element | null) => {
+export const diff = (parentNode: Element, oldTree: Element | null, newTree: Element | null) => {
     const patches: Patch[] = [];
-    const walk = (oldNode: Element | null, newNode: Element | null) => {
-
-        if (!oldNode && newNode) {
-            patches.push({
-                type: PatchType.Append,
-                node: newNode
-            })
+    const walk = (parentNode: Element, oldNode: Element | null, newNode: Element | null) => {
+        if (oldNode === null && newNode !== null) {
+            patches.push({ type: 'append', parentNode, newNode });
             return;
-        } else if (oldNode && !newNode) {
-            patches.push({
-                type: PatchType.Remove,
-                node: oldNode
-            });
+        } else if (newNode === null && oldNode !== null) {
+            patches.push({ type: 'remove', oldNode, parentNode });
             return;
-        } else if (oldNode && newNode) {            
-            if (oldNode.nodeName !== newNode.nodeName) {
-                patches.push ({
-                    type: PatchType.Replace,
-                    node: newNode,
-                });
+        } else if (oldNode && newNode) {
+            if (oldNode.tagName !== newNode.tagName) {
+                patches.push ({ type: 'replace', parentNode, oldNode, newNode });
                 return;
             }
-            const oldChildren = oldNode.childNodes;
-            const newChildren = newNode.childNodes;
-            for (let i = 0; i < oldChildren.length; i++) {
-                walk(oldChildren[i] as Element, newChildren[i] as Element);
+            if (oldNode.nodeType === Node.ELEMENT_NODE) {
+                const oldChildren = Array.from(oldNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
+                const newChildren = Array.from(newNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
+                for (let i = 0; i < oldChildren.length; i++) {
+                    const oldChild = oldChildren.length > i ? oldChildren[i] : null;
+                    const newChild = newChildren.length > i ? newChildren[i] : null;
+                    walk(oldNode, oldChild as HTMLElement, newChild as HTMLElement);
+                }
+            }
+            if (oldNode.nodeType === Node.ATTRIBUTE_NODE) {
+                if (oldNode.nodeValue !== newNode.nodeValue) {
+                    patches.push ({ type: 'replace', parentNode, oldNode, newNode });
+                }
+            }
+            if (oldNode.nodeType === Node.TEXT_NODE) {
+                if (oldNode.nodeValue !== newNode.nodeValue) {
+                    patches.push({ type: 'replace', parentNode, oldNode, newNode });
+                }
             }
         }
-
     }
-    walk(oldTree, newTree);
+    walk(parentNode, oldTree, newTree);
     return patches;
 }
 
-export enum PatchType {
-    Append,
-    Remove,
-    Replace
+type Patch = {
+    type: 'replace' | 'remove' | 'append',
+    parentNode: ParentNode,
+    newNode?: Element,
+    oldNode?: Element,
 }
 
-export type Patch = {
-    type: PatchType,
-    node: Element,
-}
-
-export const applyPatches = (root: HTMLElement, patches: Patch[]) => {
-    const applyPatch = (parent: HTMLElement, patch: Patch) => {
-        if (patch.type === PatchType.Append) {
-            parent.appendChild(patch.node);
-        } else if (patch.type === PatchType.Remove) {
-            parent.removeChild(patch.node);
-        } else if (patch.type === PatchType.Replace) {
-            parent.replaceChild(patch.node, patch.node);
-        }
-    };
-
+export const applyPatches = (patches: Patch[]) => {
     patches.forEach(patch => {
-        applyPatch(root, patch);
+        const { type, newNode, oldNode, parentNode } = patch;
+
+        if (type === 'replace' && newNode && oldNode && parentNode) {
+            parentNode.replaceChild(newNode, oldNode);
+        } else if (type === 'remove' && oldNode && parentNode) {
+            parentNode.removeChild(oldNode);
+        } else if (type === 'append' && newNode && parentNode) {
+            parentNode.appendChild(newNode);
+        }
     });
 }

@@ -14,7 +14,7 @@ export const renderApp = (app: HTMLElement, dispatch: Dispatcher<Action<ActionTy
 
     return (state: AppState) => {
         const container = renderer(state);
-        applyPatches(app, diff(app.firstElementChild, container));
+        applyPatches(diff(app, app.firstElementChild, container));
     }
 }
 
