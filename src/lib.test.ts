@@ -25,7 +25,7 @@ describe("diff", () => {
         const oldTree = null;
         expect(diff(root, oldTree, newTree).filter(p => p.type === 'append')).toHaveLength(1);
     });
-    it("should return an array with a remove patch child count is different", () => {
+    it("should return an array with a remove patch when child count is different", () => {
         const root = document.createElement("div");
         const oldTree = document.createElement("div");
         oldTree.innerHTML = `
@@ -41,7 +41,7 @@ describe("diff", () => {
             <li>1</li>
             <li>2</li>
         </ul>`
-        expect(diff(root, oldTree, newTree)).toHaveLength(1);
+        expect(diff(root, oldTree, newTree).filter(p => p.type === 'remove')).toHaveLength(1);
     });
 });
 

@@ -1,40 +1,42 @@
 export const diff = (parentNode: Element, oldTree: Element | null, newTree: Element | null) => {
-    const patches: Patch[] = [];
-    const walk = (parentNode: Element, oldNode: Element | null, newNode: Element | null) => {
+    
+    const walk = (parentNode: Element, oldNode: Element | null, newNode: Element | null, patches: Patch[] = []): Patch[] => {
         if (oldNode === null && newNode !== null) {
-            patches.push({ type: 'append', parentNode, newNode });
-            return;
-        } else if (newNode === null && oldNode !== null) {
-            patches.push({ type: 'remove', oldNode, parentNode });
-            return;
-        } else if (oldNode && newNode) {
+            return [...patches, { type: 'append', parentNode, newNode }];
+        }
+        if (newNode === null && oldNode !== null) {
+            return [...patches, { type: 'remove', oldNode, parentNode }];
+        }
+        if (oldNode && newNode) {
             if (oldNode.tagName !== newNode.tagName) {
-                patches.push ({ type: 'replace', parentNode, oldNode, newNode });
-                return;
+                return [...patches, { type: 'replace', parentNode, oldNode, newNode }];
             }
             if (oldNode.nodeType === Node.ELEMENT_NODE) {
                 const oldChildren = Array.from(oldNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
                 const newChildren = Array.from(newNode.childNodes).filter(n => n.nodeType === Node.ELEMENT_NODE);
-                for (let i = 0; i < oldChildren.length; i++) {
-                    const oldChild = oldChildren.length > i ? oldChildren[i] : null;
-                    const newChild = newChildren.length > i ? newChildren[i] : null;
-                    walk(oldNode, oldChild as HTMLElement, newChild as HTMLElement);
-                }
+
+                const children = oldChildren.length > newChildren.length ? oldChildren : newChildren;
+                return children.reduce((patches, child, i) => {
+                    const oldChild = oldChildren.length > i ? oldChildren[i] as HTMLElement : null;
+                    const newChild = newChildren.length > i ? newChildren[i] as HTMLElement : null;
+                    return [...walk(oldNode, oldChild, newChild, patches)];
+                }, patches);
             }
             if (oldNode.nodeType === Node.ATTRIBUTE_NODE) {
                 if (oldNode.nodeValue !== newNode.nodeValue) {
-                    patches.push ({ type: 'replace', parentNode, oldNode, newNode });
+                    return [...patches, { type: 'replace', parentNode, oldNode, newNode }];
                 }
             }
             if (oldNode.nodeType === Node.TEXT_NODE) {
                 if (oldNode.nodeValue !== newNode.nodeValue) {
-                    patches.push({ type: 'replace', parentNode, oldNode, newNode });
+                    return [...patches, { type: 'replace', parentNode, oldNode, newNode }];
                 }
             }
         }
+        return patches;
     }
-    walk(parentNode, oldTree, newTree);
-    return patches;
+    
+    return walk(parentNode, oldTree, newTree);
 }
 
 type Patch = {
