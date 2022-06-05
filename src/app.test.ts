@@ -1,9 +1,10 @@
 import { reducer } from "./reducer";
-import { createStorage, Persistance } from "./store";
+import { createStore } from "./store";
 import { FilterType } from "./types";
 import { containerView } from "./views";
 import { getAllByRole, getByLabelText, getByRole, getByText, queryAllByAttribute, queryAllByText, waitFor } from "@testing-library/dom";
 import { renderApp } from "./app";
+import { Persistance } from "./lib";
 
 const storage = (): Persistance => {
     let state: string = JSON.stringify({
@@ -22,7 +23,7 @@ const storage = (): Persistance => {
 
 
 describe("app smoke test", () => {
-    const store = createStorage(reducer, storage());
+    const store = createStore(reducer, storage());
 
     it("should render the app", () => {
         const container = containerView(store.dispatch)(store.getState());
@@ -38,7 +39,7 @@ describe("filter refresh", () => {
     beforeAll(() => {
         document.body.appendChild(elem);
 
-        const store = createStorage(reducer, storage());
+        const store = createStore(reducer, storage());
         const renderer = renderApp(elem, store.dispatch);
         store.subscribe({
             next: (value) => renderer(value)
@@ -80,7 +81,7 @@ describe("mark task completed", () => {
     beforeAll(() => {
         document.body.appendChild(elem);
 
-        const store = createStorage(reducer, storage());
+        const store = createStore(reducer, storage());
         const renderer = renderApp(elem, store.dispatch);
         store.subscribe({
             next: (value) => renderer(value)
@@ -114,7 +115,7 @@ describe("mark all completed", () => {
     beforeAll(() => {
         document.body.appendChild(elem);
 
-        const store = createStorage(reducer, storage());
+        const store = createStore(reducer, storage());
         const renderer = renderApp(elem, store.dispatch);
         store.subscribe({
             next: (value) => renderer(value)
