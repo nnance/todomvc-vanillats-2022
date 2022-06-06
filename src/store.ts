@@ -1,5 +1,5 @@
-import { createStorage, Persistance } from "./lib";
-import { Action, ActionTypes, AppState, FilterType, Reducer } from "./types";
+import { createStorage, Persistance } from "./lib.js";
+import { Action, ActionTypes, AppState, FilterType, Reducer } from "./types.js";
 
 const storageKey = 'todomvc-typescript-2002';
 
