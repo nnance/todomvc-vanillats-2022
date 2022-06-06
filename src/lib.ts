@@ -143,28 +143,38 @@ export const diff = (parentNode: Element, oldTree: Element | null, newTree: Elem
     return walk(parentNode, oldTree, newTree);
 }
 
-// TODO: Add conditional types based on the type of the element
 export type Patch = {
-    type: 'replace' | 'remove' | 'append' | 'attribute',
+    type: 'replace',
     parentNode: ParentNode,
-    newNode?: Element,
-    oldNode?: Element,
-    name?: string,
-    value?: string
+    newNode: Element,
+    oldNode: Element,
+} | {
+    type: 'remove',
+    parentNode: ParentNode,
+    oldNode: Element,
+} | {
+    type: 'append',
+    parentNode: ParentNode,
+    newNode: Element,
+} | {
+    type: 'attribute',
+    parentNode: ParentNode,
+    name: string,
+    value: string
 }
 
 export const applyPatches = (patches: Patch[]) => {
     patches.forEach(patch => {
-        const { type, newNode, oldNode, parentNode, name, value } = patch;
+        const { type, parentNode } = patch;
 
-        if (type === 'replace' && newNode && oldNode) {
-            parentNode.replaceChild(newNode, oldNode);
-        } else if (type === 'remove' && oldNode) {
-            parentNode.removeChild(oldNode);
-        } else if (type === 'append' && newNode) {
-            parentNode.appendChild(newNode);
-        } else if (type === 'attribute' && name) {
-            (parentNode as HTMLElement).setAttribute(name, value!);
+        if (type === 'replace') {
+            parentNode.replaceChild(patch.newNode, patch.oldNode);
+        } else if (type === 'remove') {
+            parentNode.removeChild(patch.oldNode);
+        } else if (type === 'append') {
+            parentNode.appendChild(patch.newNode);
+        } else if (type === 'attribute') {
+            (parentNode as HTMLElement).setAttribute(patch.name, patch.value!);
         }
     });
 }
